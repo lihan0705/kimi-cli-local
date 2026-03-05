@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import os
 import warnings
 from collections.abc import AsyncGenerator
 from pathlib import Path
@@ -129,8 +130,24 @@ class KimiCLI:
             provider = config.providers[model.provider]
 
         if not model:
-            model = LLMModel(provider="", model="", max_context_size=100_000)
-            provider = LLMProvider(type="kimi", base_url="", api_key=SecretStr(""))
+            # Check for OpenAI-compatible env vars to skip login
+            openai_api_key = os.getenv("OPENAI_API_KEY")
+            openai_base_url = os.getenv("OPENAI_BASE_URL")
+            if openai_api_key and openai_base_url:
+                openai_model_name = os.getenv("OPENAI_MODEL_NAME", "gpt-4o")
+                model = LLMModel(
+                    provider="openai_legacy",
+                    model=openai_model_name,
+                    max_context_size=100_000,
+                )
+                provider = LLMProvider(
+                    type="openai_legacy",
+                    base_url=openai_base_url,
+                    api_key=SecretStr(openai_api_key),
+                )
+            else:
+                model = LLMModel(provider="", model="", max_context_size=100_000)
+                provider = LLMProvider(type="kimi", base_url="", api_key=SecretStr(""))
 
         # try overwrite with environment variables
         assert provider is not None

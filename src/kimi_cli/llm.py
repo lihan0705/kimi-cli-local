@@ -86,8 +86,13 @@ def augment_provider_with_env_vars(provider: LLMProvider, model: LLMModel) -> di
         case "openai_legacy" | "openai_responses":
             if base_url := os.getenv("OPENAI_BASE_URL"):
                 provider.base_url = base_url
+                applied["OPENAI_BASE_URL"] = base_url
             if api_key := os.getenv("OPENAI_API_KEY"):
                 provider.api_key = SecretStr(api_key)
+                applied["OPENAI_API_KEY"] = "******"
+            if model_name := os.getenv("OPENAI_MODEL_NAME"):
+                model.model = model_name
+                applied["OPENAI_MODEL_NAME"] = model_name
         case _:
             pass
 

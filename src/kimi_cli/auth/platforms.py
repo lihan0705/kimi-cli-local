@@ -44,6 +44,7 @@ class Platform(NamedTuple):
     id: str
     name: str
     base_url: str
+    provider_type: str = "kimi"
     search_url: str | None = None
     fetch_url: str | None = None
     allowed_prefixes: list[str] | None = None
@@ -62,6 +63,12 @@ PLATFORMS: list[Platform] = [
         base_url=_kimi_code_base_url(),
         search_url=f"{_kimi_code_base_url()}/search",
         fetch_url=f"{_kimi_code_base_url()}/fetch",
+    ),
+    Platform(
+        id="openai-legacy",
+        name="OpenAI Legacy (Custom URL)",
+        base_url="",
+        provider_type="openai_legacy",
     ),
     Platform(
         id="moonshot-cn",

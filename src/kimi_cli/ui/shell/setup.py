@@ -67,6 +67,13 @@ class _SetupResult(NamedTuple):
 
 
 async def _setup_platform(platform: Platform) -> _SetupResult | None:
+    # prompt for URL if needed
+    if not platform.base_url:
+        base_url = await _prompt_text("Enter the API base URL (e.g., https://api.openai.com/v1)")
+        if not base_url:
+            return None
+        platform = platform._replace(base_url=base_url)
+
     # enter the API key
     api_key = await _prompt_text("Enter your API key", is_password=True)
     if not api_key:
@@ -127,7 +134,7 @@ def _apply_setup_result(result: _SetupResult) -> None:
     provider_key = managed_provider_key(result.platform.id)
     model_key = managed_model_key(result.platform.id, result.selected_model.id)
     config.providers[provider_key] = LLMProvider(
-        type="kimi",
+        type=result.platform.provider_type,
         base_url=result.platform.base_url,
         api_key=result.api_key,
     )
