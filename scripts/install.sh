@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Kimi Code CLI - One-click Installer/Builder
-# This script installs uv, clones the repo (if needed), builds, and installs the tool.
+# Kimi Code CLI - One-click Installer/Builder (with Mirror Support)
+# This script installs uv, clones the repo (with mirror backup), builds, and installs the tool.
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -10,6 +10,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 REPO_URL="https://github.com/lihan0705/kimi-cli-local.git"
+MIRROR_URL="https://ghfast.top/https://github.com/lihan0705/kimi-cli-local.git"
 INSTALL_DIR="$HOME/.kimi-code-cli-src"
 
 info() { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -40,17 +41,30 @@ info "Using uv at: $UV_BIN"
 # 2. Decide if we need to clone or use current directory
 if [ -f "pyproject.toml" ] && [ -d "src/kimi_cli" ]; then
   info "Detected local source repository. Building from current directory..."
-  BUILD_DIR="."
+  cd "."
 else
-  info "Not in a source repository. Cloning to $INSTALL_DIR..."
+  info "Not in a source repository. Preparing installation directory..."
   if [ -d "$INSTALL_DIR" ]; then
     info "Updating existing repository in $INSTALL_DIR..."
-    cd "$INSTALL_DIR" && git pull
+    cd "$INSTALL_DIR"
+    # Try to pull, but don't fail if network is bad, we'll try mirror if needed
+    git pull || info "Pull failed, will continue with existing code."
   else
-    git clone "$REPO_URL" "$INSTALL_DIR"
+    info "Cloning repository..."
+    # Try original URL first with a short timeout
+    if git clone --depth 1 "$REPO_URL" "$INSTALL_DIR" 2>/dev/null; then
+      success "Cloned from GitHub successfully."
+    else
+      info "GitHub direct connection failed. Trying mirror: $MIRROR_URL"
+      if git clone --depth 1 "$MIRROR_URL" "$INSTALL_DIR"; then
+        success "Cloned from mirror successfully."
+      else
+        error "Failed to clone repository from both GitHub and Mirror."
+        exit 1
+      fi
+    fi
     cd "$INSTALL_DIR"
   fi
-  BUILD_DIR="."
 fi
 
 # 3. Build and Install
