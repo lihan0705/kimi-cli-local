@@ -2,12 +2,15 @@
 set -euo pipefail
 
 # Kimi Code CLI - One-click Installer/Builder
-# This script installs uv, builds the project (including Web UI), and installs it as a tool.
+# This script installs uv, clones the repo (if needed), builds, and installs the tool.
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+REPO_URL="https://github.com/lihan0705/kimi-cli-local.git"
+INSTALL_DIR="$HOME/.kimi-code-cli-src"
 
 info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
@@ -28,39 +31,47 @@ install_uv() {
 # 1. Ensure uv is installed
 if ! command -v uv >/dev/null 2>&1; then
   install_uv
-  # Source cargo env if it was just installed (uv often installs to ~/.local/bin or similar)
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
 UV_BIN=$(command -v uv)
 info "Using uv at: $UV_BIN"
 
-# 2. Check if we are in the source repository
+# 2. Decide if we need to clone or use current directory
 if [ -f "pyproject.toml" ] && [ -d "src/kimi_cli" ]; then
-  info "Detected local source repository. Starting local build and install..."
-  
-  # Ensure Node.js is present for web build
-  if ! command -v npm >/dev/null 2>&1; then
-    error "Node.js (npm) is required to build the Web UI. Please install it first."
-    exit 1
-  fi
-
-  info "Step 1: Syncing dependencies..."
-  "$UV_BIN" sync
-
-  info "Step 2: Building Web UI (this may take a minute)..."
-  "$UV_BIN" run scripts/build_web.py
-
-  info "Step 3: Installing as a global tool (editable mode)..."
-  "$UV_BIN" tool install --editable . \
-    --with-editable packages/kosong \
-    --with-editable packages/kaos --force
-
-  success "Kimi Code CLI installed successfully from source!"
-  info "You can now run 'kimi' or 'kimi-cli' from anywhere."
+  info "Detected local source repository. Building from current directory..."
+  BUILD_DIR="."
 else
-  # 3. Fallback to remote installation if not in source repo
-  info "Not in a source repository. Installing 'kimi-cli' from PyPI..."
-  "$UV_BIN" tool install kimi-cli --force
-  success "Kimi Code CLI installed successfully from PyPI!"
+  info "Not in a source repository. Cloning to $INSTALL_DIR..."
+  if [ -d "$INSTALL_DIR" ]; then
+    info "Updating existing repository in $INSTALL_DIR..."
+    cd "$INSTALL_DIR" && git pull
+  else
+    git clone "$REPO_URL" "$INSTALL_DIR"
+    cd "$INSTALL_DIR"
+  fi
+  BUILD_DIR="."
 fi
+
+# 3. Build and Install
+info "Starting build and installation process..."
+
+# Check dependencies
+if ! command -v npm >/dev/null 2>&1; then
+  error "Node.js (npm) is required to build the Web UI. Please install it first."
+  exit 1
+fi
+
+info "Step 1: Syncing dependencies..."
+"$UV_BIN" sync
+
+info "Step 2: Building Web UI (this may take a minute)..."
+"$UV_BIN" run scripts/build_web.py
+
+info "Step 3: Installing as a global tool..."
+"$UV_BIN" tool install --editable . \
+  --with-editable packages/kosong \
+  --with-editable packages/kaos --force
+
+success "Kimi Code CLI installed successfully!"
+info "You can now run 'kimi' or 'kimi-cli' from anywhere."
