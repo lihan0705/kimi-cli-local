@@ -142,32 +142,55 @@ See more features in the [Documentation](https://moonshotai.github.io/kimi-cli/e
 
 ## Development
 
-To develop Kimi Code CLI, run:
+### Prerequisites
+
+- **Python 3.12+**: The core logic is built with Python.
+- **Node.js & npm**: Required for building and developing the Web UI.
+- **uv**: Modern Python package and project manager. Install it via:
+  ```bash
+  curl -fsSL https://astral.sh/uv/install.sh | bash
+  ```
+
+### Build and Setup
+
+To develop or build Kimi Code CLI from source:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/MoonshotAI/kimi-cli.git
+   cd kimi-cli
+   ```
+
+2. **One-click Build & Install**:
+   We provide a script that handles dependency syncing, Web UI compilation, and global tool installation:
+   ```bash
+   ./scripts/install.sh
+   ```
+   *Alternatively, use `make install-tool` to achieve the same.*
+
+### Setup Your API
+
+After installation, run `kimi` to start the CLI. To configure your own API provider (as shown in the image below):
+
+1. Type `/login` in the Kimi prompt.
+2. Select **"2. OpenAI Legacy (Custom URL)"** for custom OpenAI-compatible endpoints.
+3. Enter your **API Base URL** and **API Key**.
+4. Select the desired model from the list.
+
+![Setup Custom API](./docs/media/setlocalapi_1.png)
+
+### Useful Commands
+
+Refer to the following commands for development:
 
 ```sh
-git clone https://github.com/MoonshotAI/kimi-cli.git
-cd kimi-cli
-
-make prepare  # prepare the development environment
-```
-
-Then you can start working on Kimi Code CLI.
-
-Refer to the following commands after you make changes:
-
-```sh
-uv run kimi  # run Kimi Code CLI
-
-make format  # format code
-make check  # run linting and type checking
-make test  # run tests
-make test-kimi-cli  # run Kimi Code CLI tests only
-make test-kosong  # run kosong tests only
-make test-pykaos  # run pykaos tests only
-make build-web  # build the web UI and sync it into the package (requires Node.js/npm)
-make build  # build python packages
-make build-bin  # build standalone binary
-make help  # show all make targets
+uv run kimi        # run Kimi Code CLI locally
+make format        # format code
+make check         # run linting and type checking
+make test          # run tests
+make build-web     # build only the web UI
+make build-bin     # build standalone binary
+make help          # show all make targets
 ```
 
 Note: `make build` and `make build-bin` automatically run `make build-web` to embed the web UI.
