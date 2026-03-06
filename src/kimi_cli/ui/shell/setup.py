@@ -143,10 +143,11 @@ def _apply_setup_result(result: _SetupResult) -> None:
             del config.models[key]
     for model_info in result.models:
         capabilities = model_info.capabilities or None
+        max_context_size = model_info.context_length if model_info.context_length > 0 else 128000
         config.models[managed_model_key(result.platform.id, model_info.id)] = LLMModel(
             provider=provider_key,
             model=model_info.id,
-            max_context_size=model_info.context_length,
+            max_context_size=max_context_size,
             capabilities=capabilities,
         )
     config.default_model = model_key

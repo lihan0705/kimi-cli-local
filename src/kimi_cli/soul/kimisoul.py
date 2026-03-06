@@ -173,7 +173,7 @@ class KimiSoul:
 
     @property
     def _context_usage(self) -> float:
-        if self._runtime.llm is not None:
+        if self._runtime.llm is not None and self._runtime.llm.max_context_size > 0:
             return self._context.token_count / self._runtime.llm.max_context_size
         return 0.0
 

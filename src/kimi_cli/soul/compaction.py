@@ -66,6 +66,8 @@ def should_auto_compact(
     - Ratio-based: token_count >= max_context_size * trigger_ratio
     - Reserved-based: token_count + reserved_context_size >= max_context_size
     """
+    if max_context_size <= 0:
+        return False
     return (
         token_count >= max_context_size * trigger_ratio
         or token_count + reserved_context_size >= max_context_size

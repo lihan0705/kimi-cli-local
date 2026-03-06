@@ -226,7 +226,7 @@ async def _list_models(
         result.append(
             ModelInfo(
                 id=str(model_id),
-                context_length=int(item.get("context_length") or 0),
+                context_length=int(item.get("context_length") or 128000),
                 supports_reasoning=bool(item.get("supports_reasoning")),
                 supports_image_in=bool(item.get("supports_image_in")),
                 supports_video_in=bool(item.get("supports_video_in")),
@@ -250,12 +250,13 @@ def _apply_models(
 
         existing = config.models.get(model_key)
         capabilities = model.capabilities or None  # empty set -> None
+        max_context_size = model.context_length if model.context_length > 0 else 128000
 
         if existing is None:
             config.models[model_key] = LLMModel(
                 provider=provider_key,
                 model=model.id,
-                max_context_size=model.context_length,
+                max_context_size=max_context_size,
                 capabilities=capabilities,
             )
             changed = True
@@ -267,8 +268,8 @@ def _apply_models(
         if existing.model != model.id:
             existing.model = model.id
             changed = True
-        if existing.max_context_size != model.context_length:
-            existing.max_context_size = model.context_length
+        if existing.max_context_size != max_context_size:
+            existing.max_context_size = max_context_size
             changed = True
         if existing.capabilities != capabilities:
             existing.capabilities = capabilities

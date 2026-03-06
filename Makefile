@@ -134,6 +134,14 @@ build-bin-onedir: build-web ## Build the standalone executable with PyInstaller 
 	@uv run pyinstaller kimi.spec
 	@if [ -f dist/kimi/kimi-exe.exe ]; then mv dist/kimi/kimi-exe.exe dist/kimi/kimi.exe; elif [ -f dist/kimi/kimi-exe ]; then mv dist/kimi/kimi-exe dist/kimi/kimi; fi
 	@mkdir -p dist/onedir && mv dist/kimi dist/onedir/
+
+.PHONY: install-tool
+install-tool: build-web ## Install kimi-cli as a global uv tool (editable mode).
+	@echo "==> Installing kimi-cli as a global tool (editable)"
+	@uv tool install --editable . \
+		--with-editable packages/kosong \
+		--with-editable packages/kaos
+
 .PHONY: ai-test
 ai-test: ## Run the test suite with Kimi Code CLI.
 	@echo "==> Running AI test suite"

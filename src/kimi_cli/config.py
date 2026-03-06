@@ -59,7 +59,7 @@ class LLMModel(BaseModel):
     """Provider name"""
     model: str
     """Model name"""
-    max_context_size: int
+    max_context_size: int = Field(gt=0)
     """Maximum context size (unit: tokens)"""
     capabilities: set[ModelCapability] | None = None
     """Model capabilities"""
