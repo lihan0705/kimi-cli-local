@@ -250,9 +250,6 @@ async def context(soul: KimiSoul, args: str):
     from io import StringIO
 
     from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
-    from rich.text import Text
 
     from kimi_cli.soul.toolset import MCPTool
 
@@ -276,7 +273,19 @@ async def context(soul: KimiSoul, args: str):
     # Tools
     for tool_name, tool in soul.agent.toolset._tool_dict.items():
         # Estimate tool definition size
-        tool_size = len(tool.description) + len(json.dumps(tool.parameters))
+        from pydantic import BaseModel
+        params = {}
+        if hasattr(tool, "parameters"):
+            params = tool.parameters
+        elif hasattr(tool, "params"):
+            if isinstance(tool.params, type) and issubclass(tool.params, BaseModel):
+                params = tool.params.model_json_schema()
+            else:
+                params = tool.params
+
+        description = getattr(tool, "description", "")
+        tool_size = len(str(description)) + len(json.dumps(params))
+
         if isinstance(tool, MCPTool):
             categories["MCP tools"] += tool_size
         else:
@@ -309,78 +318,15 @@ async def context(soul: KimiSoul, args: str):
         token_breakdown = {k: 0 for k in categories}
 
     # 2. Render UI
-    console = Console(file=StringIO(), force_terminal=True, width=80)
-
-    # Colors and Icons
-    styles = {
-        "System prompt": ("#888888", "⚙️"),
-        "System tools": ("#666666", "🛠️"),
-        "MCP tools": ("#00bcd4", "🔌"),
-        "Messages": ("#9c27b0", "💬"),
-        "Tool use & results": ("#3f51b5", "🔧"),
-    }
-
-    # Visual Grid (10x10 = 100 icons)
-    grid_size = 100
-    usage_pct = total_tokens / max_tokens
-    icons_to_fill = min(grid_size, int(usage_pct * grid_size))
-
-    grid_text = Text()
-    # Fill grid based on proportions
-    current_icon = 0
-    for cat, tokens in token_breakdown.items():
-        cat_pct = tokens / max_tokens
-        cat_icons = int(cat_pct * grid_size)
-        color, icon = styles[cat]
-        for _ in range(cat_icons):
-            if current_icon >= grid_size:
-                break
-            grid_text.append("⬢ ", style=color)
-            current_icon += 1
-            if current_icon % 10 == 0:
-                grid_text.append("\n")
-
-    # Fill remainder of usage if rounding lost some icons
-    while current_icon < icons_to_fill:
-        grid_text.append("⬢ ", style="#ffffff")
-        current_icon += 1
-        if current_icon % 10 == 0:
-            grid_text.append("\n")
-
-    # Fill empty space
-    while current_icon < grid_size:
-        grid_text.append("⬢ ", style="#333333")
-        current_icon += 1
-        if current_icon % 10 == 0:
-            grid_text.append("\n")
-
-    # Details Table
-    table = Table.grid(padding=(0, 2))
-    table.add_column(style="bold")
-    table.add_column()
+    lines = []
+    usage_pct = (total_tokens / max_tokens) * 100
+    lines.append(f"Context Usage: {total_tokens}/{max_tokens} tokens ({usage_pct:.1f}%)")
+    lines.append(f"Model: {soul.model_name}")
+    lines.append("")
 
     for cat, tokens in token_breakdown.items():
-        color, icon = styles[cat]
-        pct = (tokens / max_tokens) * 100
+        cat_pct = (tokens / max_tokens) * 100
         tokens_str = f"{tokens/1000:.1f}k" if tokens >= 1000 else str(tokens)
-        table.add_row(
-            f"{icon} {cat}:",
-            Text(f"{tokens_str} tokens ({pct:.1f}%)", style=color),
-        )
+        lines.append(f"- {cat}: {tokens_str} tokens ({cat_pct:.1f}%)")
 
-    # Header
-    header = Text()
-    header.append("Context Usage\n", style="bold")
-    model_info = f"{soul.model_name} • {total_tokens/1000:.1f}k/{max_tokens/1000:.0f}k"
-    header.append(f"{model_info}\n", style="dim")
-    usage_label = f"tokens ({usage_pct*100:.1f}%)"
-    header.append(usage_label, style="dim italic")
-
-    # Layout
-    main_table = Table.grid(padding=(0, 4))
-    main_table.add_row(grid_text, table)
-
-    console.print(header)
-    console.print(main_table)
-
-    wire_send(TextPart(text=console.file.getvalue()))
+    wire_send(TextPart(text="\n".join(lines)))
