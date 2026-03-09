@@ -241,3 +241,146 @@ async def import_context(soul: KimiSoul, args: str):
                 "The content is now part of your session context."
             )
         )
+
+
+@registry.command
+async def context(soul: KimiSoul, args: str):
+    """Show detailed context usage breakdown"""
+    import json
+    from io import StringIO
+
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.text import Text
+
+    from kimi_cli.soul.toolset import MCPTool
+
+    # 1. Gather stats
+    total_tokens = soul.context.token_count
+    max_tokens = soul.runtime.llm.max_context_size if soul.runtime.llm else 128000
+    if max_tokens <= 0:
+        max_tokens = 128000
+
+    categories = {
+        "System prompt": 0,
+        "System tools": 0,
+        "MCP tools": 0,
+        "Messages": 0,
+        "Tool use & results": 0,
+    }
+
+    # System Prompt
+    categories["System prompt"] += len(str(soul.agent.system_prompt))
+
+    # Tools
+    for tool_name, tool in soul.agent.toolset._tool_dict.items():
+        # Estimate tool definition size
+        tool_size = len(tool.description) + len(json.dumps(tool.parameters))
+        if isinstance(tool, MCPTool):
+            categories["MCP tools"] += tool_size
+        else:
+            categories["System tools"] += tool_size
+
+    # Messages History
+    for msg in soul.context.history:
+        content_len = len(msg.extract_text())
+        if msg.tool_calls:
+            for tc in msg.tool_calls:
+                content_len += len(tc.function.name) + len(tc.function.arguments or "")
+
+        if msg.role == "system":
+            categories["System prompt"] += content_len
+        elif msg.role in ("user", "assistant"):
+            if msg.tool_calls:
+                categories["Tool use & results"] += content_len
+            else:
+                categories["Messages"] += content_len
+        elif msg.role == "tool":
+            categories["Tool use & results"] += content_len
+
+    # Distribute total_tokens based on char counts
+    total_chars = sum(categories.values())
+    if total_chars > 0:
+        token_breakdown = {
+            k: int((v / total_chars) * total_tokens) for k, v in categories.items()
+        }
+    else:
+        token_breakdown = {k: 0 for k in categories}
+
+    # 2. Render UI
+    console = Console(file=StringIO(), force_terminal=True, width=80)
+
+    # Colors and Icons
+    styles = {
+        "System prompt": ("#888888", "⚙️"),
+        "System tools": ("#666666", "🛠️"),
+        "MCP tools": ("#00bcd4", "🔌"),
+        "Messages": ("#9c27b0", "💬"),
+        "Tool use & results": ("#3f51b5", "🔧"),
+    }
+
+    # Visual Grid (10x10 = 100 icons)
+    grid_size = 100
+    usage_pct = total_tokens / max_tokens
+    icons_to_fill = min(grid_size, int(usage_pct * grid_size))
+
+    grid_text = Text()
+    # Fill grid based on proportions
+    current_icon = 0
+    for cat, tokens in token_breakdown.items():
+        cat_pct = tokens / max_tokens
+        cat_icons = int(cat_pct * grid_size)
+        color, icon = styles[cat]
+        for _ in range(cat_icons):
+            if current_icon >= grid_size:
+                break
+            grid_text.append("⬢ ", style=color)
+            current_icon += 1
+            if current_icon % 10 == 0:
+                grid_text.append("\n")
+
+    # Fill remainder of usage if rounding lost some icons
+    while current_icon < icons_to_fill:
+        grid_text.append("⬢ ", style="#ffffff")
+        current_icon += 1
+        if current_icon % 10 == 0:
+            grid_text.append("\n")
+
+    # Fill empty space
+    while current_icon < grid_size:
+        grid_text.append("⬢ ", style="#333333")
+        current_icon += 1
+        if current_icon % 10 == 0:
+            grid_text.append("\n")
+
+    # Details Table
+    table = Table.grid(padding=(0, 2))
+    table.add_column(style="bold")
+    table.add_column()
+
+    for cat, tokens in token_breakdown.items():
+        color, icon = styles[cat]
+        pct = (tokens / max_tokens) * 100
+        tokens_str = f"{tokens/1000:.1f}k" if tokens >= 1000 else str(tokens)
+        table.add_row(
+            f"{icon} {cat}:",
+            Text(f"{tokens_str} tokens ({pct:.1f}%)", style=color),
+        )
+
+    # Header
+    header = Text()
+    header.append("Context Usage\n", style="bold")
+    model_info = f"{soul.model_name} • {total_tokens/1000:.1f}k/{max_tokens/1000:.0f}k"
+    header.append(f"{model_info}\n", style="dim")
+    usage_label = f"tokens ({usage_pct*100:.1f}%)"
+    header.append(usage_label, style="dim italic")
+
+    # Layout
+    main_table = Table.grid(padding=(0, 4))
+    main_table.add_row(grid_text, table)
+
+    console.print(header)
+    console.print(main_table)
+
+    wire_send(TextPart(text=console.file.getvalue()))
