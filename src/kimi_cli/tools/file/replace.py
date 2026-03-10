@@ -27,10 +27,9 @@ class Params(BaseModel):
             "outside the working directory."
         )
     )
-    edit: Edit | list[Edit] = Field(
+    edit: list[Edit] = Field(
         description=(
-            "The edit(s) to apply to the file. "
-            "You can provide a single edit or a list of edits here."
+            "A list of edit(s) to apply to the file."
         )
     )
 
@@ -100,7 +99,7 @@ class StrReplaceFile(CallableTool2[Params]):
             content = await p.read_text(errors="replace")
 
             original_content = content
-            edits = [params.edit] if isinstance(params.edit, Edit) else params.edit
+            edits = params.edit
 
             # Apply all edits
             for edit in edits:
