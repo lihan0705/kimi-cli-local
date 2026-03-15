@@ -61,6 +61,91 @@ shell UI, ACP server mode for IDE integrations, and MCP tool loading.
   based on the registry. Standard skills register `/skill:<skill-name>` and load `SKILL.md`
   as a user prompt; flow skills register `/flow:<skill-name>` and execute the embedded flow.
 
+# Kimi CLI Soul & Philosophy
+
+This document defines the core identity, design philosophy, and execution model of Kimi CLI.
+
+## Philosophy
+
+Kimi Code CLI is built upon several core principles that guide its development and user experience:
+
+1.  **Local-First & Transparent**: Designed for the terminal, prioritizing local execution and absolute user control. Every thought and action of the agent is visible via the `Wire` protocol, ensuring no "black box" behavior.
+2.  **Modular & Declarative**: Agent behaviors are defined through declarative YAML specs. Capabilities are extended via a pluggable tool system (including MCP and Skills), allowing for easy composition and reuse.
+3.  **Engineered for Reliability**: Rigorous type safety with Pyright and strict linting with Ruff. A robust `Approval` mechanism ensures that autonomous actions remain under human supervision.
+4.  **Modern Developer Experience**: Leverages cutting-edge Python tooling (`uv`, `ruff`) and a workspace-based architecture to provide a fast, reproducible, and enjoyable development workflow.
+5.  **Platform Agnostic Extensibility**: Abstracts OS interactions via `PyKAOS`, enabling seamless transitions between local and remote environments, while embracing the open MCP ecosystem.
+
+## Core Architecture: The "Soul" vs. API Calls
+
+Kimi CLI is not a simple wrapper around LLM API calls. It implements a **State Machine** driven by an **Asynchronous Protocol Loop (Wire Protocol)**.
+
+### Why it's not a simple API call:
+
+1.  **Statefulness**: The `Soul` maintains a persistent `Context` that evolves with every interaction, tool result, and background compaction.
+2.  **Event-Driven (Wire)**: The `Soul` communicates via a stream of asynchronous events (`WireMessage`). This decouples the brain from the interface (Shell, Web, IDE).
+3.  **Autonomous ReAct Loop**: The agent doesn't follow a pre-defined flow. It uses a `Reasoning -> Acting -> Observing` loop to decide its next move dynamically.
+4.  **LaborMarket Integration**: Complex tasks trigger the `Task` tool, which spawns sub-agents from the `LaborMarket` via the `Wire` protocol.
+
+### Async Protocol Loop (Mermaid)
+
+```mermaid
+sequenceDiagram
+    participant User as 用户 (Shell/Web/IDE)
+    participant UI as UI 层 (Wire Consumer)
+    participant Soul as KimiSoul (State Machine)
+    participant Context as Context (Memory)
+    participant LLM as LLM (kosong)
+    participant Tool as Toolset (Actions)
+
+    Note over User, Tool: 异步协议循环 (Wire Protocol Loop) 开始
+
+    User->>UI: 输入指令 (例如: "分析代码")
+    UI->>Soul: 发送 WireMessage (UserMessage)
+    
+    Soul->>Context: 记录用户意图
+    Soul->>UI: 广播 WireEvent (ThinkingStart)
+    
+    loop 自主决策循环 (Autonomous Loop)
+        Soul->>LLM: 提交 Context + 工具定义
+        LLM-->>Soul: 返回 Thinking (推理过程)
+        Soul->>UI: 广播 WireEvent (ThinkingDelta) - 实时流式展示想法
+        
+        LLM-->>Soul: 发起 ToolCall (调用工具)
+        Soul->>UI: 广播 WireEvent (ToolStart: read_file)
+        
+        alt 需要审批?
+            Soul->>UI: 发送 WireEvent (ApprovalRequest)
+            User-->>UI: 确认/拒绝
+            UI-->>Soul: 审批结果
+        end
+        
+        Soul->>Tool: 执行实际 IO 操作 (PyKAOS)
+        Tool-->>Soul: 返回结果
+        Soul->>UI: 广播 WireEvent (ToolOutput)
+        Soul->>Context: 记录工具结果
+    end
+
+    Soul->>UI: 广播 WireEvent (FinalResponse)
+    Soul->>Context: 执行 Compaction (自动记忆压缩)
+    UI->>User: 展示最终结果
+```
+
+## Implementation Map
+
+- **Main Loop**: `src/kimi_cli/soul/kimisoul.py` (The logic that runs the loop above).
+- **Tool Execution**: `src/kimi_cli/soul/toolset.py` (Bridges LLM calls to actual OS/Web actions).
+- **Event Protocol**: `src/kimi_cli/wire/` (Definitions of all messages sent over the "Wire").
+- **Memory Management**: `src/kimi_cli/soul/context.py` & `compaction.py`.
+- **Operating System Abstraction**: `packages/kaos/` (Used by tools to interact with local/remote FS).
+
+## Extension Methods
+
+| Method | Description | Path |
+| :--- | :--- | :--- |
+| **Tools** | Pure Python functions decorated as tools. Fast and direct. | `src/kimi_cli/tools/` |
+| **AgentSpecs** | YAML files that define a new "Persona" using existing tools. | `src/kimi_cli/agents/` |
+| **Skills** | Markdown-based instruction sets (`SKILL.md`) that guide behavior. | `src/kimi_cli/skills/` |
+
 ## Major modules and interfaces
 
 - `src/kimi_cli/app.py`: `KimiCLI.create(...)` and `KimiCLI.run(...)` are the main programmatic
