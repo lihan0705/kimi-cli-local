@@ -316,7 +316,7 @@ async def context(soul: KimiSoul, args: str):
         token_breakdown = {k: 0 for k in categories}
 
     # 2. Render UI
-    lines = []
+    lines: list[str] = []
     usage_pct = (total_tokens / max_tokens) * 100
     lines.append(f"Context Usage: {total_tokens}/{max_tokens} tokens ({usage_pct:.1f}%)")
     lines.append(f"Model: {soul.model_name}")
