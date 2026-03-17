@@ -27,11 +27,7 @@ class Params(BaseModel):
             "outside the working directory."
         )
     )
-    edit: list[Edit] = Field(
-        description=(
-            "A list of edit(s) to apply to the file."
-        )
-    )
+    edit: list[Edit] = Field(description=("A list of edit(s) to apply to the file."))
 
 
 class StrReplaceFile(CallableTool2[Params]):

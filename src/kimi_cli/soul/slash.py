@@ -247,9 +247,6 @@ async def import_context(soul: KimiSoul, args: str):
 async def context(soul: KimiSoul, args: str):
     """Show detailed context usage breakdown"""
     import json
-    from io import StringIO
-
-    from rich.console import Console
 
     from kimi_cli.soul.toolset import MCPTool
 
@@ -271,9 +268,10 @@ async def context(soul: KimiSoul, args: str):
     categories["System prompt"] += len(str(soul.agent.system_prompt))
 
     # Tools
-    for tool_name, tool in soul.agent.toolset._tool_dict.items():
+    for _tool_name, tool in soul.agent.toolset._tool_dict.items():
         # Estimate tool definition size
         from pydantic import BaseModel
+
         params = {}
         if hasattr(tool, "parameters"):
             params = tool.parameters
@@ -311,9 +309,7 @@ async def context(soul: KimiSoul, args: str):
     # Distribute total_tokens based on char counts
     total_chars = sum(categories.values())
     if total_chars > 0:
-        token_breakdown = {
-            k: int((v / total_chars) * total_tokens) for k, v in categories.items()
-        }
+        token_breakdown = {k: int((v / total_chars) * total_tokens) for k, v in categories.items()}
     else:
         token_breakdown = {k: 0 for k in categories}
 
@@ -326,7 +322,7 @@ async def context(soul: KimiSoul, args: str):
 
     for cat, tokens in token_breakdown.items():
         cat_pct = (tokens / max_tokens) * 100
-        tokens_str = f"{tokens/1000:.1f}k" if tokens >= 1000 else str(tokens)
+        tokens_str = f"{tokens / 1000:.1f}k" if tokens >= 1000 else str(tokens)
         lines.append(f"- {cat}: {tokens_str} tokens ({cat_pct:.1f}%)")
 
     wire_send(TextPart(text="\n".join(lines)))

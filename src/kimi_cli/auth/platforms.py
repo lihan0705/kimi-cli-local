@@ -223,7 +223,7 @@ async def _list_models(
         model_id = item.get("id")
         if not model_id:
             continue
-            
+
         # Try different common fields for context length
         raw_ctx_len = item.get("context_length") or item.get("max_model_len") or 128000
         try:

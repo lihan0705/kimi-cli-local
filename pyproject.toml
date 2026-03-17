@@ -76,6 +76,7 @@ kimi-cli = "kimi_cli.cli:cli"
 
 [tool.ruff]
 line-length = 100
+exclude = ["src/kimi_cli/skills/"]
 
 [tool.ruff.lint]
 select = [
@@ -95,6 +96,7 @@ select = [
 [tool.pyright]
 typeCheckingMode = "standard"
 pythonVersion = "3.14"
+exclude = ["src/kimi_cli/skills/"]
 include = [
     "src/**/*.py",
     "tests/**/*.py",
