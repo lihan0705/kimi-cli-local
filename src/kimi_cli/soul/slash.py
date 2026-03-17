@@ -270,20 +270,16 @@ async def context(soul: KimiSoul, args: str):
     # Tools
     for _tool_name, tool in soul.agent.toolset._tool_dict.items():  # type: ignore
         # Estimate tool definition size
-        from typing import Any
+        from typing import Any, cast
 
-        from pydantic import BaseModel
-
+        tool_any: Any = cast(Any, tool)
         params: Any = {}
-        if hasattr(tool, "parameters"):
-            params = tool.parameters
-        elif hasattr(tool, "params"):
-            if isinstance(tool.params, type) and issubclass(tool.params, BaseModel):  # type: ignore
-                params = tool.params.model_json_schema()
-            else:
-                params = tool.params  # type: ignore
+        if hasattr(tool_any, "parameters"):
+            params = tool_any.parameters
+        elif hasattr(tool_any, "params"):
+            params = tool_any.params  # type: ignore
 
-        description = getattr(tool, "description", "")
+        description = getattr(tool_any, "description", "")
         tool_size = len(str(description)) + len(json.dumps(params))
 
         if isinstance(tool, MCPTool):
