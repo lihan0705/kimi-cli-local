@@ -529,10 +529,13 @@ export const CodeBlockCopyButton = ({
     <Button
       ref={ref}
       className={cn("shrink-0", className)}
-      onClick={copyToClipboard}
       size="icon-xs"
       variant="ghost"
       {...props}
+      onClick={(e) => {
+        props.onClick?.(e);
+        copyToClipboard();
+      }}
     >
       {children ?? <Icon className="size-3.5" />}
     </Button>
@@ -589,10 +592,13 @@ export const CodeBlockDownloadButton = ({
     <Button
       ref={ref}
       className={cn("shrink-0", className)}
-      onClick={handleDownload}
       size="icon-xs"
       variant="ghost"
       {...props}
+      onClick={(e) => {
+        props.onClick?.(e);
+        handleDownload();
+      }}
     >
       {children ?? <DownloadIcon className="size-3.5" />}
     </Button>
@@ -637,10 +643,13 @@ export const CodeBlockPreviewButton = ({
     <Button
       ref={ref}
       className={cn("shrink-0", className)}
-      onClick={handlePreview}
       size="icon-xs"
       variant="ghost"
       {...props}
+      onClick={(e) => {
+        props.onClick?.(e);
+        handlePreview();
+      }}
     >
       {children ?? <ExternalLinkIcon className="size-3.5" />}
     </Button>
