@@ -11,6 +11,13 @@
   <a href="https://lihan0705.github.io/kimi-cli-plus/zh/"><img src="https://img.shields.io/badge/文档-中文-000000?labelColor=333333" alt="Docs ZH"></a>
 </p>
 
+## ✨ Preview
+
+<p align="center">
+  <img src="./docs/media/shell-mode.gif" width="48%" alt="Shell Mode">
+  <img src="./docs/media/vscode.png" width="48%" alt="VS Code Integration">
+</p>
+
 ---
 
 ## ☯️ The "Plus" Philosophy
@@ -27,18 +34,12 @@ We've unified the configuration layer so you can treat different models as a sin
 Beyond raw prompting, we provide a structured cognitive layer designed for professional engineering.
 - **Surgical Editing**: Enhanced tool validation logic ensures the agent "thinks twice, cuts once," delivering high-fidelity code mutations.
 - **Default Skillset**: Built-in specialized behaviors for autonomous planning, research, and multi-file orchestration—ready out of the box.
-- **Terminal Symbiosis**: [Real-time shell integration](./docs/media/shell-mode.gif) that empowers you to execute and observe without leaving the flow.
 
 ---
 
 ## 🚀 Key Capabilities
 
-### ⚡ Shell Mode
-Toggle `Ctrl-X` to run terminal commands directly in context.
-<p align="center">
-  <img src="./docs/media/shell-mode.gif" width="800" alt="Shell Mode">
-</p>
-
+- **⚡ Shell Mode**: Toggle `Ctrl-X` to run terminal commands directly in context.
 - **🛠️ Autonomous Planning**: Sophisticated multi-step engineering and codebase analysis.
 - **🔌 Deep Integration**: Native support for **VS Code**, **Zed**, and **MCP**.
 
@@ -46,13 +47,22 @@ Toggle `Ctrl-X` to run terminal commands directly in context.
 
 ## 📦 Quick Start
 
-### 1. Installation
+### 1. Prerequisites
+- **Python 3.12+**
+- **uv**: Python package manager. [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
+- **Node.js 22+**: Required for the Web UI. We recommend `nvm` or `fnm`:
+  ```bash
+  # Using nvm (Linux/macOS)
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  nvm install 22
+  ```
+
+### 2. Installation
 ```bash
 curl -LsSf https://raw.githubusercontent.com/lihan0705/kimi-cli-plus/main/scripts/install.sh | bash
 ```
-*Requires Python 3.12+ and Node.js 22+.*
 
-### 2. Configuration
+### 3. Configuration
 Run `kimi` and use `/login` to name your provider (e.g., `deepseek`), add your URL, and start coding.
 
 ---
@@ -60,7 +70,7 @@ Run `kimi` and use `/login` to name your provider (e.g., `deepseek`), add your U
 ## 🛠️ Development
 
 ```bash
-uv run kimi         # Local run
+uv run kimi         # Run locally
 make build-web      # Build the enhanced UI
 make check          # Quality check
 ```
