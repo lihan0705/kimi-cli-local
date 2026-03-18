@@ -1,8 +1,8 @@
 # Kimi Code Plus 🚀
 
 <p align="center">
-  <strong>The enhanced, multi-provider powered evolution of Kimi Code CLI.</strong><br>
-  Built for developers who need maximum flexibility with a clean, monochrome aesthetic.
+  <strong>大道至简 — Simplicity is the ultimate sophistication.</strong><br>
+  A high-precision AI engineering companion built for professional autonomy.
 </p>
 
 <p align="center">
@@ -13,58 +13,56 @@
 
 ---
 
-## ✨ The "Plus" Advantage
+## ☯️ The "Plus" Philosophy
 
-This version extends the original Kimi Code CLI with critical features for professional workflows:
+Kimi Code Plus is not just a tool; it is a refinement of the interface between human intent and machine execution. We focus on removing the friction of configuration and the noise of complex UIs, adhering to the principle that **the best tool is the one that feels invisible.**
 
-### 🛠️ Multi-OpenAI Legacy Support
-Stop overwriting your config. Manage multiple OpenAI-compatible endpoints (DeepSeek, GLM, Local LLMs) simultaneously with custom names.
-- **CLI Power**: [Switch models globally](./docs/media/allURLmodel.png) with clear provider attribution.
-- **Web Dashboard**: A dedicated [Management UI](./docs/media/simpleurlmanage.png) to add/delete endpoints on the fly.
+### 🔳 Multi-LLM Fabric
+We've unified the configuration layer so you can treat different models as a single, fluid resource.
+- **Unified Identity**: Manage multiple OpenAI-compatible providers (DeepSeek, GLM, local vLLM) simultaneously. No overwrites, just [Seamless CLI Switching](./docs/media/allURLmodel.png).
+- **Intuitive Management**: A dedicated, monochrome [Web Dashboard](./docs/media/simpleurlmanage.png) to manage endpoints with the same elegance as your code.
+- **Zero-Config Discovery**: Automatic `max_model_len` detection for vLLM—intelligence that stays out of your way.
 
-### 🌐 Next-Gen Web Interface
-A completely redesigned, monochrome web experience that feels like a professional IDE tool, not just a chat window.
-- **Visual Model Selector**: [Browse and search](./docs/media/webmodelselect.png) models across all your configured providers.
-- **Instant Sync**: Adding a provider in the web UI automatically refreshes and populates the model list.
-
-### ⚡ Performance & Polish
-- **Optimized vLLM Support**: Correct model identification for local vLLM/Ollama endpoints using `max_model_len`.
-- **Surgical Code Editing**: Refined `edit` tool validation for more reliable autonomous programming.
-- **Monochrome Aesthetic**: Deeply integrated shadcn/ui style for a distraction-free environment.
+### 🧠 Agentic Precision & Default Skills
+Beyond raw prompting, we provide a structured cognitive layer designed for professional engineering.
+- **Surgical Editing**: Enhanced tool validation logic ensures the agent "thinks twice, cuts once," delivering high-fidelity code mutations.
+- **Default Skillset**: Built-in specialized behaviors for autonomous planning, research, and multi-file orchestration—ready out of the box.
+- **Terminal Symbiosis**: [Real-time shell integration](./docs/media/shell-mode.gif) that empowers you to execute and observe without leaving the flow.
 
 ---
 
-## 🚀 Capabilities
+## 🚀 Key Capabilities
 
-- **Shell Mode**: Toggle `Ctrl-X` to run terminal commands directly.
-- **Autonomous Planning**: Let the agent handle complex multi-step engineering tasks.
-- **IDE Integration**: Works seamlessly with **VS Code**, **Zed**, and **JetBrains**.
-- **MCP Native**: Full support for the Model Context Protocol ecosystem.
+### ⚡ Shell Mode
+Toggle `Ctrl-X` to run terminal commands directly in context.
+<p align="center">
+  <img src="./docs/media/shell-mode.gif" width="800" alt="Shell Mode">
+</p>
+
+- **🛠️ Autonomous Planning**: Sophisticated multi-step engineering and codebase analysis.
+- **🔌 Deep Integration**: Native support for **VS Code**, **Zed**, and **MCP**.
 
 ---
 
 ## 📦 Quick Start
 
-### Installation
+### 1. Installation
 ```bash
 curl -LsSf https://raw.githubusercontent.com/lihan0705/kimi-cli-plus/main/scripts/install.sh | bash
 ```
 *Requires Python 3.12+ and Node.js 22+.*
 
-### Configuration
-Run `kimi` and use `/login` to set up your providers.
-1. Select **"OpenAI Legacy (Custom URL)"**.
-2. Name it (e.g., `deepseek`), add your URL and API Key.
-3. Start coding.
+### 2. Configuration
+Run `kimi` and use `/login` to name your provider (e.g., `deepseek`), add your URL, and start coding.
 
 ---
 
 ## 🛠️ Development
 
 ```bash
-uv run kimi         # Run locally
+uv run kimi         # Local run
 make build-web      # Build the enhanced UI
-make test           # Run verification suite
+make check          # Quality check
 ```
 
 <p align="center">
