@@ -15,21 +15,25 @@
 
 import * as runtime from '../runtime';
 import type {
+  AddOpenAILegacyProviderRequest,
   ConfigToml,
   GlobalConfig,
   HTTPValidationError,
+  OpenAILegacyProviderList,
   UpdateConfigTomlRequest,
   UpdateConfigTomlResponse,
   UpdateGlobalConfigRequest,
   UpdateGlobalConfigResponse,
 } from '../models/index';
 import {
+    AddOpenAILegacyProviderRequestToJSON,
     ConfigTomlFromJSON,
     ConfigTomlToJSON,
     GlobalConfigFromJSON,
     GlobalConfigToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    OpenAILegacyProviderListFromJSON,
     UpdateConfigTomlRequestFromJSON,
     UpdateConfigTomlRequestToJSON,
     UpdateConfigTomlResponseFromJSON,
@@ -39,6 +43,14 @@ import {
     UpdateGlobalConfigResponseFromJSON,
     UpdateGlobalConfigResponseToJSON,
 } from '../models/index';
+
+export interface AddOpenAILegacyProviderRequestConfigPostRequest {
+    addOpenAILegacyProviderRequest: AddOpenAILegacyProviderRequest;
+}
+
+export interface DeleteOpenAILegacyProviderRequestConfigDeleteRequest {
+    name: string;
+}
 
 export interface UpdateConfigTomlApiConfigTomlPutRequest {
     updateConfigTomlRequest: UpdateConfigTomlRequest;
@@ -54,10 +66,76 @@ export interface UpdateGlobalConfigApiConfigPatchRequest {
 export class ConfigApi extends runtime.BaseAPI {
 
     /**
+     * List all OpenAI Legacy providers.
+     */
+    async listOpenAILegacyProvidersApiConfigProvidersOpenaiLegacyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OpenAILegacyProviderList>> {
+        const queryParameters: any = {};
+        const headerParameters: runtime.HTTPHeaders = {};
+        let urlPath = `/api/config/providers/openai-legacy`;
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => OpenAILegacyProviderListFromJSON(jsonValue));
+    }
+
+    async listOpenAILegacyProvidersApiConfigProvidersOpenaiLegacyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OpenAILegacyProviderList> {
+        const response = await this.listOpenAILegacyProvidersApiConfigProvidersOpenaiLegacyGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Add or update an OpenAI Legacy provider.
+     */
+    async addOpenAILegacyProviderApiConfigProvidersOpenaiLegacyPostRaw(requestParameters: AddOpenAILegacyProviderRequestConfigPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalConfig>> {
+        const queryParameters: any = {};
+        const headerParameters: runtime.HTTPHeaders = {};
+        headerParameters['Content-Type'] = 'application/json';
+        let urlPath = `/api/config/providers/openai-legacy`;
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddOpenAILegacyProviderRequestToJSON(requestParameters['addOpenAILegacyProviderRequest']),
+        }, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalConfigFromJSON(jsonValue));
+    }
+
+    async addOpenAILegacyProviderApiConfigProvidersOpenaiLegacyPost(requestParameters: AddOpenAILegacyProviderRequestConfigPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalConfig> {
+        const response = await this.addOpenAILegacyProviderApiConfigProvidersOpenaiLegacyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Delete an OpenAI Legacy provider.
+     */
+    async deleteOpenAILegacyProviderApiConfigProvidersOpenaiLegacyNameDeleteRaw(requestParameters: DeleteOpenAILegacyProviderRequestConfigDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalConfig>> {
+        const queryParameters: any = {};
+        const headerParameters: runtime.HTTPHeaders = {};
+        let urlPath = `/api/config/providers/openai-legacy/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(requestParameters['name'])));
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalConfigFromJSON(jsonValue));
+    }
+
+    async deleteOpenAILegacyProviderApiConfigProvidersOpenaiLegacyNameDelete(requestParameters: DeleteOpenAILegacyProviderRequestConfigDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalConfig> {
+        const response = await this.deleteOpenAILegacyProviderApiConfigProvidersOpenaiLegacyNameDeleteRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get kimi-cli config.toml.
      * Get kimi-cli config.toml
      */
-    async getConfigTomlApiConfigTomlGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ConfigToml>> {
+    async getConfigTomlApiConfigTomlGetRaw(
+initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ConfigToml>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};

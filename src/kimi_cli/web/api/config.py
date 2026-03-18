@@ -66,6 +66,22 @@ class UpdateConfigTomlRequest(BaseModel):
     content: str = Field(description="New TOML content")
 
 
+class OpenAILegacyProviderInfo(BaseModel):
+    name: str
+    base_url: str
+    has_api_key: bool
+
+
+class OpenAILegacyProviderList(BaseModel):
+    providers: list[OpenAILegacyProviderInfo]
+
+
+class AddOpenAILegacyProviderRequest(BaseModel):
+    name: str
+    base_url: str
+    api_key: str | None = None
+
+
 class UpdateConfigTomlResponse(BaseModel):
     """Response after updating config.toml."""
 
@@ -126,6 +142,71 @@ def _ensure_sensitive_apis_allowed(request: Request) -> None:
 @router.get("/", summary="Get global (kimi-cli) config snapshot")
 async def get_global_config() -> GlobalConfig:
     """Get global (kimi-cli) config snapshot."""
+    return _build_global_config()
+
+
+@router.get("/providers/openai-legacy", summary="List OpenAI Legacy providers")
+async def list_openai_legacy_providers() -> OpenAILegacyProviderList:
+    """List all OpenAI Legacy providers."""
+    from kimi_cli.auth.platforms import (
+        list_openai_legacy_providers as list_providers,
+    )
+
+    config = load_config()
+    providers = list_providers(config)
+    return OpenAILegacyProviderList(
+        providers=[
+            OpenAILegacyProviderInfo(
+                name=name,
+                base_url=p.base_url,
+                has_api_key=bool(p.api_key and p.api_key.get_secret_value()),
+            )
+            for name, p in providers
+        ]
+    )
+
+
+@router.post("/providers/openai-legacy", summary="Add/Update OpenAI Legacy provider")
+async def add_openai_legacy_provider(
+    request: AddOpenAILegacyProviderRequest,
+    http_request: Request,
+) -> GlobalConfig:
+    """Add or update an OpenAI Legacy provider."""
+    from kimi_cli.auth.platforms import add_openai_legacy_provider as add_provider
+    from kimi_cli.auth.platforms import refresh_managed_models
+
+    _ensure_sensitive_apis_allowed(http_request)
+    config = load_config()
+    add_provider(config, request.name, request.base_url, request.api_key)
+
+    # Refresh models for the new provider
+    await refresh_managed_models(config)
+    save_config(config)
+
+    return _build_global_config()
+
+
+@router.delete(
+    "/providers/openai-legacy/{name}", summary="Delete OpenAI Legacy provider"
+)
+async def delete_openai_legacy_provider(
+    name: str,
+    http_request: Request,
+) -> GlobalConfig:
+    """Delete an OpenAI Legacy provider."""
+    from kimi_cli.auth.platforms import (
+        delete_openai_legacy_provider as delete_provider,
+    )
+
+    _ensure_sensitive_apis_allowed(http_request)
+    config = load_config()
+    if not delete_provider(config, name):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{name}' not found",
+        )
+    save_config(config)
+
     return _build_global_config()
 
 

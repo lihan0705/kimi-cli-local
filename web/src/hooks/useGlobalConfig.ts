@@ -15,6 +15,7 @@ type UpdateGlobalConfigArgs = {
 
 export type UseGlobalConfigReturn = {
   config: GlobalConfig | null;
+  setConfig: (config: GlobalConfig | null) => void;
   isLoading: boolean;
   isUpdating: boolean;
   error: string | null;
@@ -88,6 +89,7 @@ export function useGlobalConfig(): UseGlobalConfigReturn {
 
   return {
     config,
+    setConfig,
     isLoading,
     isUpdating,
     error,

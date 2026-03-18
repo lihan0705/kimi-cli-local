@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
-import { Check, Cpu, Paperclip, RefreshCcw } from "lucide-react";
+import { Check, Cpu, Paperclip, RefreshCcw, Settings } from "lucide-react";
 import { usePromptInputAttachments } from "@ai-elements";
 import type { ConfigModel } from "@/lib/api/models";
 import { ModelCapability } from "@/lib/api/models";
@@ -25,6 +25,8 @@ import {
   ModelSelectorTrigger,
 } from "@/components/ai-elements/model-selector";
 import { cn } from "@/lib/utils";
+import { OpenAILegacyManager } from "./openai-legacy-manager";
+import { Separator } from "@/components/ui/separator";
 
 type ThinkingState = "enabled" | "disabled" | "forced";
 
@@ -49,10 +51,11 @@ export type GlobalConfigControlsProps = {
 export function GlobalConfigControls({
   className,
 }: GlobalConfigControlsProps): ReactElement {
-  const { config, isLoading, isUpdating, error, refresh, update } =
+  const { config, setConfig, isLoading, isUpdating, error, refresh, update } =
     useGlobalConfig();
 
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [isManagerOpen, setIsManagerOpen] = useState(false);
   const [lastBusySkip, setLastBusySkip] = useState<string[] | null>(null);
 
   const currentModel = useMemo(() => {
@@ -259,6 +262,21 @@ export function GlobalConfigControls({
               })}
             </ModelSelectorGroup>
           </ModelSelectorList>
+          <Separator className="my-1 bg-[#e5e7eb]" />
+          <div className="p-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-[#6b7280] hover:text-[#111827] h-8 px-2"
+              onClick={() => {
+                setIsSelectorOpen(false);
+                setIsManagerOpen(true);
+              }}
+            >
+              <Settings className="size-3.5" />
+              <span className="text-xs">Manage Custom URLs</span>
+            </Button>
+          </div>
         </ModelSelectorContent>
       </ModelSelector>
 
@@ -305,6 +323,12 @@ export function GlobalConfigControls({
           <RefreshCcw className="size-4" />
         </Button>
       ) : null}
+
+      <OpenAILegacyManager
+        open={isManagerOpen}
+        onOpenChange={setIsManagerOpen}
+        onConfigUpdate={(newConfig) => setConfig(newConfig)}
+      />
     </div>
   );
 }

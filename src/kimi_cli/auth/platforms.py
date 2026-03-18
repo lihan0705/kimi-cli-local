@@ -237,10 +237,10 @@ def make_openai_legacy_provider_key(name: str) -> str:
 
 def list_openai_legacy_providers(config: Config) -> list[tuple[str, LLMProvider]]:
     """List all OpenAI Legacy providers with their custom names.
-    
+
     Args:
         config: Configuration object
-        
+
     Returns:
         List of tuples (custom_name, provider) for OpenAI Legacy providers
     """
@@ -252,6 +252,66 @@ def list_openai_legacy_providers(config: Config) -> list[tuple[str, LLMProvider]
                 result.append((name, provider))
     return result
 
+
+def add_openai_legacy_provider(
+    config: Config,
+    name: str,
+    base_url: str,
+    api_key: str | None = None,
+) -> str:
+    """Add or update an OpenAI Legacy provider.
+
+    Args:
+        config: Configuration object
+        name: Custom name for the provider
+        base_url: Base URL for the provider
+        api_key: Optional API key
+
+    Returns:
+        The provider key
+    """
+    from pydantic import SecretStr
+
+    provider_key = make_openai_legacy_provider_key(name)
+    provider = LLMProvider(
+        type="openai_legacy",
+        base_url=base_url,
+        api_key=SecretStr(api_key) if api_key else SecretStr(""),
+    )
+    config.providers[provider_key] = provider
+    return provider_key
+
+
+def delete_openai_legacy_provider(config: Config, name: str) -> bool:
+    """Delete an OpenAI Legacy provider and its associated models.
+
+    Args:
+        config: Configuration object
+        name: Custom name for the provider
+
+    Returns:
+        True if the provider was found and deleted, False otherwise
+    """
+    provider_key = make_openai_legacy_provider_key(name)
+    if provider_key not in config.providers:
+        return False
+
+    # Remove provider
+    del config.providers[provider_key]
+
+    # Remove all models associated with this provider
+    platform_id = f"openai-legacy:{name}"
+    removed_default = False
+    for key, model in list(config.models.items()):
+        if model.provider == provider_key:
+            del config.models[key]
+            if config.default_model == key:
+                removed_default = True
+
+    if removed_default:
+        config.default_model = None
+
+    return True
 
 async def list_models(
     platform: Platform,
