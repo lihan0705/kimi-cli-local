@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo } from "react";
 import type { LiveMessage } from "@/hooks/types";
 import {
   Tooltip,
@@ -57,7 +57,6 @@ export const TurnNavigator = memo(function TurnNavigator({
   bookmarkedTurns: propBookmarkedTurns,
   onToggleBookmark,
 }: TurnNavigatorProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const turns = extractTurns(messages);
 
   // Use store if props not provided
@@ -78,10 +77,8 @@ export const TurnNavigator = memo(function TurnNavigator({
         "fixed right-0 top-0 z-10 h-full py-4",
         "flex flex-col items-center justify-center",
         "transition-all duration-200",
-        visible ? (isHovered ? "opacity-100" : "opacity-30") : "opacity-0 pointer-events-none"
+        visible ? "opacity-100" : "opacity-0 pointer-events-none"
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       role="navigation"
       aria-label="Conversation turns"
     >
@@ -89,7 +86,7 @@ export const TurnNavigator = memo(function TurnNavigator({
         "flex flex-col items-center gap-1 rounded-l-md px-1 py-2",
         "transition-all duration-200",
         "overflow-y-auto max-h-full scroll-y",
-        isHovered ? "bg-muted/50 backdrop-blur-sm" : "bg-transparent"
+        visible ? "bg-muted/50 backdrop-blur-sm" : "bg-transparent"
       )}>
         {turns.map((turn) => {
           const isBookmarked = bookmarkedTurns.has(turn.turnIndex);
@@ -112,7 +109,7 @@ export const TurnNavigator = memo(function TurnNavigator({
                 side="left"
                 className="max-w-[280px] p-2"
               >
-                <div className="flex items-start gap-2">
+                <div className="flex items-center gap-2">
                   <p className="flex-1 text-sm leading-relaxed">{truncateText(turn.content, 100)}</p>
                   <button
                     type="button"
