@@ -23,6 +23,7 @@ import {
   type VirtualizedMessageListHandle,
 } from "./virtualized-message-list";
 import { MessageSearchDialog } from "../message-search-dialog";
+import { TurnNavigator } from "./turn-navigator";
 
 type ChatConversationProps = {
   messages: LiveMessage[];
@@ -211,6 +212,12 @@ export function ChatConversation({
         open={isSearchOpen}
         onOpenChange={onSearchOpenChange}
         onJumpToMessage={handleJumpToMessage}
+      />
+
+      <TurnNavigator
+        messages={messages}
+        visible={hasMessages}
+        onNavigateToTurn={handleJumpToMessage}
       />
     </div>
   );
