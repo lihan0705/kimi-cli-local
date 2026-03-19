@@ -6,11 +6,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { StarIcon } from "lucide-react";
+import { useBookmarkStore } from "../bookmark-store";
 
 export type TurnNavigatorProps = {
   messages: LiveMessage[];
   visible: boolean;
   onNavigateToTurn: (messageIndex: number) => void;
+  bookmarkedTurns?: Set<number>;
+  onToggleBookmark?: (turnIndex: number) => void;
 };
 
 /**
@@ -50,9 +54,18 @@ export const TurnNavigator = memo(function TurnNavigator({
   messages,
   visible,
   onNavigateToTurn,
+  bookmarkedTurns: propBookmarkedTurns,
+  onToggleBookmark,
 }: TurnNavigatorProps) {
   const [isHovered, setIsHovered] = useState(false);
   const turns = extractTurns(messages);
+
+  // Use store if props not provided
+  const storeBookmarkedTurns = useBookmarkStore((s) => s.bookmarkedTurns);
+  const storeToggleBookmark = useBookmarkStore((s) => s.toggleBookmark);
+
+  const bookmarkedTurns = propBookmarkedTurns ?? storeBookmarkedTurns;
+  const toggleBookmark = onToggleBookmark ?? storeToggleBookmark;
 
   // Don't render if there are fewer than 2 turns
   if (turns.length < 2) {
@@ -78,28 +91,50 @@ export const TurnNavigator = memo(function TurnNavigator({
         "overflow-y-auto max-h-full scroll-y",
         isHovered ? "bg-muted/50 backdrop-blur-sm" : "bg-transparent"
       )}>
-        {turns.map((turn) => (
-          <Tooltip key={turn.turnIndex}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => onNavigateToTurn(turn.messageIndex)}
-                className={cn(
-                  "size-2 rounded-full cursor-pointer shrink-0",
-                  "bg-muted-foreground/40 transition-all",
-                  "hover:bg-foreground hover:size-3"
-                )}
-                aria-label={`Go to turn ${turn.turnIndex + 1}`}
-              />
-            </TooltipTrigger>
-            <TooltipContent
-              side="left"
-              className="max-w-[280px] text-left break-words"
-            >
-              <p>{truncateText(turn.content, 100)}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
+        {turns.map((turn) => {
+          const isBookmarked = bookmarkedTurns.has(turn.turnIndex);
+          return (
+            <Tooltip key={turn.turnIndex}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => onNavigateToTurn(turn.messageIndex)}
+                  className={cn(
+                    "size-2 rounded-full cursor-pointer shrink-0 transition-all",
+                    isBookmarked
+                      ? "bg-amber-400 hover:bg-amber-500"
+                      : "bg-muted-foreground/40 hover:bg-foreground hover:size-3"
+                  )}
+                  aria-label={`Go to turn ${turn.turnIndex + 1}${isBookmarked ? " (bookmarked)" : ""}`}
+                />
+              </TooltipTrigger>
+              <TooltipContent
+                side="left"
+                className="max-w-[280px] p-2"
+              >
+                <div className="space-y-2">
+                  <p className="text-sm leading-relaxed">{truncateText(turn.content, 100)}</p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleBookmark(turn.turnIndex);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1 text-xs transition-colors",
+                      isBookmarked
+                        ? "text-amber-400 hover:text-amber-500"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <StarIcon className={cn("w-3 h-3", isBookmarked && "fill-current")} />
+                    {isBookmarked ? "Bookmarked" : "Bookmark"}
+                  </button>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </div>
     </div>
   );

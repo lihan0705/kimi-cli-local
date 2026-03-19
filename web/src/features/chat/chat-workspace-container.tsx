@@ -25,6 +25,7 @@ import { getApiBaseUrl, isMacOS } from "@/hooks/utils";
 import { useSessionStream } from "@/hooks/useSessionStream";
 import { useToolEventsStore } from "@/features/tool/store";
 import { useQueueStore } from "./queue-store";
+import { useBookmarkStore } from "./bookmark-store";
 import { ChatWorkspace } from "./chat";
 
 type PendingMessage = {
@@ -130,6 +131,7 @@ export function ChatWorkspaceContainer({
   const queueLength = useQueueStore((s) => s.queue.length);
   const dequeue = useQueueStore((s) => s.dequeue);
   const clearQueue = useQueueStore((s) => s.clearQueue);
+  const setBookmarkSessionId = useBookmarkStore((s) => s.setSessionId);
 
   useEffect(() => {
     if (status === "streaming") {
@@ -143,6 +145,11 @@ export function ChatWorkspaceContainer({
   useEffect(() => {
     clearQueue();
   }, [selectedSessionId, clearQueue]);
+
+  // Load bookmarks for the current session
+  useEffect(() => {
+    setBookmarkSessionId(selectedSessionId || null);
+  }, [selectedSessionId, setBookmarkSessionId]);
 
   // Auto-send next queued message when status becomes ready
   const prevStatusRef = useRef(status);
