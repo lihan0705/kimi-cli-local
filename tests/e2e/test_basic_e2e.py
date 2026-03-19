@@ -122,7 +122,7 @@ def _collect_until_response(
         if msg.get("method") == "event":
             params = msg.get("params")
             if isinstance(params, dict):
-                events.append(params)
+                events.append(cast(dict[str, object], params))
     raise AssertionError(f"Missing response for id {response_id!r}")
 
 
@@ -133,7 +133,7 @@ def _wire_has_text(events: list[dict[str, object]], text: str) -> bool:
         payload = event.get("payload", {})
         if not isinstance(payload, dict):
             continue
-        if payload.get("type") == "text" and text in str(payload.get("text", "")):
+        if cast(str, payload.get("type")) == "text" and text in str(payload.get("text", "")):
             return True
     return False
 
@@ -316,7 +316,7 @@ async def test_scripted_echo_kimi_cli_agent_e2e(
         assert return_code == 0
         result = resp.get("result")
         assert isinstance(result, dict)
-        assert result.get("status") == "finished"
+        assert cast(str, result.get("status")) == "finished"
         assert _wire_has_text(events, "Translation completed successfully.")
     elif mode == "shell":
         return_code, stdout_lines = _run_shell_mode(config_path, work_dir, user_prompt)

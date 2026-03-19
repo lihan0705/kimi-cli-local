@@ -202,6 +202,12 @@ class Anthropic:
                         | "tool_result"
                         | "server_tool_use"
                         | "web_search_tool_result"
+                        | "web_fetch_tool_result"
+                        | "code_execution_tool_result"
+                        | "bash_code_execution_tool_result"
+                        | "text_editor_code_execution_tool_result"
+                        | "tool_search_tool_result"
+                        | "container_upload"
                     ):
                         last_block["cache_control"] = CacheControlEphemeralParam(type="ephemeral")
                     case "thinking" | "redacted_thinking":
@@ -447,7 +453,16 @@ class AnthropicStreamedMessage:
                                     id=block.id,
                                     function=ToolCall.FunctionBody(name=block.name, arguments=""),
                                 )
-                            case "server_tool_use" | "web_search_tool_result":
+                            case (
+                                "server_tool_use"
+                                | "web_search_tool_result"
+                                | "web_fetch_tool_result"
+                                | "code_execution_tool_result"
+                                | "bash_code_execution_tool_result"
+                                | "text_editor_code_execution_tool_result"
+                                | "tool_search_tool_result"
+                                | "container_upload"
+                            ):
                                 # ignore
                                 continue
                     elif isinstance(event, RawContentBlockDeltaEvent):

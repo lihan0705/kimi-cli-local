@@ -1,6 +1,11 @@
 import os
 
-from playwright.sync_api import sync_playwright
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from playwright.sync_api import sync_playwright
 
 # Example: Automating interaction with static HTML files using file:// URLs
 

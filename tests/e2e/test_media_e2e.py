@@ -52,7 +52,7 @@ def _collect_until_response(
         if msg.get("method") == "event":
             params = msg.get("params")
             if isinstance(params, dict):
-                events.append(params)
+                events.append(cast(dict[str, object], params))
     raise AssertionError(f"Missing response for id {response_id!r}")
 
 
@@ -63,7 +63,7 @@ def _turn_has_part_type(events: list[dict[str, object]], part_type: str) -> bool
         payload = event.get("payload", {})
         if not isinstance(payload, dict):
             continue
-        user_input = payload.get("user_input")
+        user_input = cast(object, payload.get("user_input"))
         if not isinstance(user_input, list):
             continue
         for part in user_input:
@@ -77,7 +77,7 @@ def _has_content_part(events: list[dict[str, object]], part_type: str) -> bool:
         if event.get("type") != "ContentPart":
             continue
         payload = event.get("payload", {})
-        if isinstance(payload, dict) and payload.get("type") == part_type:
+        if isinstance(payload, dict) and cast(str, payload.get("type")) == part_type:
             return True
     return False
 
@@ -89,7 +89,7 @@ def _has_text_content(events: list[dict[str, object]], text: str) -> bool:
         payload = event.get("payload", {})
         if not isinstance(payload, dict):
             continue
-        if payload.get("type") == "text" and text in str(payload.get("text", "")):
+        if cast(str, payload.get("type")) == "text" and text in str(payload.get("text", "")):
             return True
     return False
 
@@ -213,22 +213,25 @@ def test_scripted_echo_media_e2e(temp_work_dir: KaosPath, tmp_path: Path, mode: 
 
     work_dir = temp_work_dir.unsafe_to_local_path()
     if mode == "print":
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Describe this image."},
-                    {"type": "image_url", "image_url": {"url": image_url}},
-                ],
-            },
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Describe this video."},
-                    {"type": "video_url", "video_url": {"url": video_url}},
-                ],
-            },
-        ]
+        messages = cast(
+            list[dict[str, object]],
+            [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Describe this image."},
+                        {"type": "image_url", "image_url": {"url": image_url}},
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Describe this video."},
+                        {"type": "video_url", "video_url": {"url": video_url}},
+                    ],
+                },
+            ],
+        )
         return_code, stdout_lines = _run_print_mode(config_path, work_dir, messages)
         assert return_code == 0
         parsed_contents = [_parse_message_content(line) for line in stdout_lines]
@@ -289,7 +292,7 @@ def test_scripted_echo_media_e2e(temp_work_dir: KaosPath, tmp_path: Path, mode: 
         resp1, events1 = _collect_until_response(process, "prompt-1")
         result1 = resp1.get("result")
         assert isinstance(result1, dict)
-        assert result1.get("status") == "finished"
+        assert cast(str, result1.get("status")) == "finished"
         assert _turn_has_part_type(events1, "image_url")
         assert _has_content_part(events1, "think")
         assert _has_text_content(events1, "The image shows a simple scene.")
@@ -311,7 +314,7 @@ def test_scripted_echo_media_e2e(temp_work_dir: KaosPath, tmp_path: Path, mode: 
         resp2, events2 = _collect_until_response(process, "prompt-2")
         result2 = resp2.get("result")
         assert isinstance(result2, dict)
-        assert result2.get("status") == "finished"
+        assert cast(str, result2.get("status")) == "finished"
         assert _turn_has_part_type(events2, "video_url")
         assert _has_content_part(events2, "think")
         assert _has_text_content(events2, "The video appears to be a short clip.")

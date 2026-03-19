@@ -1412,7 +1412,7 @@ async def get_session_git_diff(session_id: UUID) -> GitDiffStats:
                             path=parts[2],
                             additions=add,
                             deletions=dele,
-                            status=file_status,  # type: ignore[arg-type]
+                            status=file_status,
                         )
                     )
 

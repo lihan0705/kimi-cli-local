@@ -5,11 +5,11 @@ from __future__ import annotations
 import hmac
 import ipaddress
 import re
-from collections.abc import Iterable
+from collections.abc import Awaitable, Callable, Iterable
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
 
 DEFAULT_ALLOWED_ORIGIN_REGEX = re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$")
@@ -140,7 +140,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         self._enforce_origin = enforce_origin
         self._lan_only = lan_only
 
-    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         path = request.url.path
 
         # LAN-only check applies to all requests (including static files)

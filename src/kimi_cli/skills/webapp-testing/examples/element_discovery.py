@@ -1,4 +1,9 @@
-from playwright.sync_api import sync_playwright
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from playwright.sync_api import sync_playwright
 
 # Example: Discovering buttons and other elements on a page
 

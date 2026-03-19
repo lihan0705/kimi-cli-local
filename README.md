@@ -24,12 +24,13 @@
 
 Kimi Code Plus enhances the developer experience through thoughtful improvements that make AI assistance more intuitive and powerful.
 
-| Improvement Type | Description & Links |
-|------------------|-------------------|
-| **🔄 Multi-LLM Provider Management** | • `/login` now supports switching between OpenAI Legacy providers<br>• Add, manage multiple URLs and API keys<br>• Auto-load all models from different endpoints<br>• Enhanced Web UI for provider management<br>• 📸 [Provider Management](./docs/media/allURLmodel.png) • [Web Dashboard](./docs/media/simpleurlmanage.png) |
-| **👁️ Context Observation** | • New `/context` command to inspect current conversation context<br>• Real-time monitoring of token usage and memory state<br>• Debug and optimize agent interactions |
-| **🎯 Enhanced Skill System** | • Added default skillset for common development tasks<br>• Ready-to-use behaviors for planning, research, and orchestration<br>• Improved autonomous multi-file coordination |
-| **🌐 Web UI Enhancements** | • Updated interface reflects new provider management features<br>• Clean, monochrome design matching code aesthetics<br>• Responsive dashboard for endpoint configuration |
+| Improvement Type | Description & Links | Update Time |
+|------------------|-------------------|-------------|
+| **🧭 Turn Navigation** | • **NEW**: Navigate conversation turns with intuitive UI controls<br>• Jump between different conversation stages and iterations<br>• Track and revisit previous responses effortlessly<br>• Enhanced workflow for iterative development<br>• 📸 [Turn Navigation Demo](./docs/media/turnNav.png) | 2026-03-19 |
+| **🔄 Multi-LLM Provider Management** | • `/login` now supports switching between OpenAI Legacy providers<br>• Add, manage multiple URLs and API keys<br>• Auto-load all models from different endpoints<br>• Enhanced Web UI for provider management<br>• 📸 [Provider Management](./docs/media/allURLmodel.png) • [Web Dashboard](./docs/media/simpleurlmanage.png) | 2026-03-15 |
+| **👁️ Context Observation** | • New `/context` command to inspect current conversation context<br>• Real-time monitoring of token usage and memory state<br>• Debug and optimize agent interactions | 2026-03-10 |
+| **🎯 Enhanced Skill System** | • Added default skillset for common development tasks<br>• Ready-to-use behaviors for planning, research, and orchestration<br>• Improved autonomous multi-file coordination | 2026-03-08 |
+| **🌐 Web UI Enhancements** | • Updated interface reflects new provider management features<br>• Clean, monochrome design matching code aesthetics<br>• Responsive dashboard for endpoint configuration | 2026-03-05 |
 
 **Design Philosophy**: The Less is More
 

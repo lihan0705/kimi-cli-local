@@ -4,7 +4,7 @@ import asyncio
 import sys
 
 if sys.version_info >= (3, 13):
-    QueueShutDown = asyncio.QueueShutDown  # type: ignore[assignment]
+    QueueShutDown = asyncio.QueueShutDown
 
     class Queue[T](asyncio.Queue[T]):
         """Asyncio Queue with shutdown support."""

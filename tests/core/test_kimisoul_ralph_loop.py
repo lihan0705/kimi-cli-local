@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Sequence
 from pathlib import Path
-from typing import Self, TypeVar
+from typing import Self, TypeVar, cast
 
 import pytest
 from inline_snapshot import Snapshot, snapshot
@@ -25,7 +25,7 @@ from kimi_cli.wire.types import TurnBegin
 
 T = TypeVar("T")
 RALPH_IMAGE_URL = "https://example.com/test.png"
-RALPH_IMAGE_USER_INPUT = [
+RALPH_IMAGE_USER_INPUT: list[ContentPart] = [
     TextPart(text="Check this image"),
     ImageURLPart(image_url=ImageURLPart.ImageURL(url=RALPH_IMAGE_URL)),
 ]
@@ -191,7 +191,7 @@ async def test_ralph_loop_replays_original_prompt(runtime: Runtime, tmp_path: Pa
     toolset = SimpleToolset()
     soul, context = _make_soul(runtime, llm, toolset, tmp_path)
 
-    await _run_and_collect_turns(soul, user_input)
+    await _run_and_collect_turns(soul, cast(str | list[ContentPart], user_input))
     expect_snapshot(
         context.history,
         snapshot(
@@ -262,7 +262,7 @@ async def test_ralph_loop_stops_on_choice(runtime: Runtime, tmp_path: Path) -> N
     toolset = SimpleToolset()
     soul, context = _make_soul(runtime, llm, toolset, tmp_path)
 
-    await _run_and_collect_turns(soul, "do it")
+    await _run_and_collect_turns(soul, cast(str | list[ContentPart], "do it"))
     expect_snapshot(
         context.history,
         snapshot(
@@ -315,7 +315,7 @@ async def test_ralph_loop_stops_on_tool_rejected(runtime: Runtime, tmp_path: Pat
     toolset = RejectToolset()
     soul, context = _make_soul(runtime, llm, toolset, tmp_path)
 
-    await _run_and_collect_turns(soul, "do it")
+    await _run_and_collect_turns(soul, cast(str | list[ContentPart], "do it"))
     expect_snapshot(
         context.history,
         snapshot(
@@ -362,7 +362,7 @@ async def test_ralph_loop_disabled_skips_loop_prompt(runtime: Runtime, tmp_path:
     toolset = SimpleToolset()
     soul, context = _make_soul(runtime, llm, toolset, tmp_path)
 
-    await _run_and_collect_turns(soul, "hello")
+    await _run_and_collect_turns(soul, cast(str | list[ContentPart], "hello"))
     expect_snapshot(
         context.history,
         snapshot(

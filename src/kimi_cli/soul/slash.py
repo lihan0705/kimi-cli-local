@@ -277,7 +277,7 @@ async def context(soul: KimiSoul, args: str):
         if hasattr(tool_any, "parameters"):
             params = tool_any.parameters
         elif hasattr(tool_any, "params"):
-            params = tool_any.params  # type: ignore
+            params = tool_any.params
 
         description = getattr(tool_any, "description", "")
         tool_size = len(str(description)) + len(json.dumps(params))

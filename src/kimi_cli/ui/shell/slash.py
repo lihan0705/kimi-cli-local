@@ -548,11 +548,11 @@ async def mcp(app: Shell, args: str):
         console.print(BulletColumns(Group(*lines), bullet_style=color))
 
 
-from . import (  # noqa: E402
-    debug,  # noqa: F401 # type: ignore[reportUnusedImport]
-    export_import,  # noqa: F401 # type: ignore[reportUnusedImport]
-    oauth,  # noqa: F401 # type: ignore[reportUnusedImport]
-    setup,  # noqa: F401 # type: ignore[reportUnusedImport]
-    update,  # noqa: F401 # type: ignore[reportUnusedImport]
-    usage,  # noqa: F401 # type: ignore[reportUnusedImport]
-)
+# from . import (
+#     debug,  # noqa: F401
+#     export_import,  # noqa: F401
+#     oauth,  # noqa: F401
+#     setup,  # noqa: F401
+#     update,  # noqa: F401
+#     usage,  # noqa: F401
+# )
