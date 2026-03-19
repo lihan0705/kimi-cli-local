@@ -105,4 +105,4 @@ export const TurnNavigator = memo(function TurnNavigator({
       </div>
     </div>
   );
-}
+});
