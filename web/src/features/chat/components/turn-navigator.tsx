@@ -112,8 +112,8 @@ export const TurnNavigator = memo(function TurnNavigator({
                 side="left"
                 className="max-w-[280px] p-2"
               >
-                <div className="space-y-2">
-                  <p className="text-sm leading-relaxed">{truncateText(turn.content, 100)}</p>
+                <div className="flex items-start gap-2">
+                  <p className="flex-1 text-sm leading-relaxed">{truncateText(turn.content, 100)}</p>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -121,14 +121,14 @@ export const TurnNavigator = memo(function TurnNavigator({
                       toggleBookmark(turn.turnIndex);
                     }}
                     className={cn(
-                      "flex items-center gap-1 text-xs transition-colors",
+                      "shrink-0 transition-colors",
                       isBookmarked
                         ? "text-amber-400 hover:text-amber-500"
                         : "text-muted-foreground hover:text-foreground"
                     )}
+                    aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
                   >
-                    <StarIcon className={cn("w-3 h-3", isBookmarked && "fill-current")} />
-                    {isBookmarked ? "Bookmarked" : "Bookmark"}
+                    <StarIcon className={cn("w-4 h-4", isBookmarked && "fill-current")} />
                   </button>
                 </div>
               </TooltipContent>
