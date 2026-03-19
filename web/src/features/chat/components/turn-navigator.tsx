@@ -63,7 +63,7 @@ export const TurnNavigator = memo(function TurnNavigator({
     <div
       className={cn(
         "fixed right-0 top-0 z-10 h-full py-4",
-        "flex flex-col items-center",
+        "flex flex-col items-center justify-center",
         "transition-all duration-200",
         visible ? (isHovered ? "opacity-100" : "opacity-30") : "opacity-0 pointer-events-none"
       )}
@@ -74,7 +74,8 @@ export const TurnNavigator = memo(function TurnNavigator({
     >
       <div className={cn(
         "flex flex-col items-center gap-1 rounded-l-md px-1 py-2",
-        "transition-all duration-200 overflow-y-auto max-h-full",
+        "transition-all duration-200",
+        "overflow-y-auto max-h-full scroll-y",
         isHovered ? "bg-muted/50 backdrop-blur-sm" : "bg-transparent"
       )}>
         {turns.map((turn) => (
