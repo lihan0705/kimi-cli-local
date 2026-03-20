@@ -221,7 +221,7 @@ class OpenAIResponses:
         """
 
         model_parameters: dict[str, Any] = {"base_url": str(self._client.base_url)}
-        model_parameters.update(self._generation_kwargs)
+        model_parameters.update(cast(dict[str, Any], dict(self._generation_kwargs)))
         return model_parameters
 
     def _convert_message(self, message: Message) -> list[ResponseInputItemParam]:
@@ -493,34 +493,37 @@ class OpenAIResponsesStreamedMessage:
         self._id = response.id
         self._usage = response.usage
         for item in response.output:
-            if hasattr(item, "type") and item.type == "message" and hasattr(item, "content"):
-                for content in item.content or []:
-                    if (
-                        hasattr(content, "type")
-                        and content.type == "output_text"
-                        and hasattr(content, "text")
-                    ):
-                        yield TextPart(text=content.text)
-            elif hasattr(item, "type") and item.type == "function_call":
+            item_type = getattr(item, "type", None)
+            if item_type == "message":
+                content_list = getattr(item, "content", None)
+                if isinstance(content_list, list):
+                    for content in cast(list[Any], content_list):
+                        if getattr(content, "type", None) == "output_text":
+                            text = getattr(content, "text", None)
+                            if isinstance(text, str):
+                                yield TextPart(text=text)
+            elif item_type == "function_call":
+                call_id = getattr(item, "call_id", None)
+                name = getattr(item, "name", None)
+                arguments = getattr(item, "arguments", None)
                 yield ToolCall(
-                    id=item.call_id if hasattr(item, "call_id") else str(uuid.uuid4()),
+                    id=call_id if isinstance(call_id, str) else str(uuid.uuid4()),
                     function=ToolCall.FunctionBody(
-                        name=item.name if hasattr(item, "name") else "",
-                        arguments=item.arguments if hasattr(item, "arguments") else "",
+                        name=name if isinstance(name, str) else "",
+                        arguments=arguments if isinstance(arguments, str) else "",
                     ),
                 )
-            elif (
-                hasattr(item, "type")
-                and item.type == "reasoning"
-                and hasattr(item, "summary")
-                and hasattr(item, "encrypted_content")
-            ):
-                for summary in item.summary:
-                    if hasattr(summary, "text"):
-                        yield ThinkPart(
-                            think=summary.text,
-                            encrypted=item.encrypted_content,
-                        )
+            elif item_type == "reasoning":
+                summaries = getattr(item, "summary", None)
+                encrypted = getattr(item, "encrypted_content", None)
+                if isinstance(summaries, list):
+                    for summary in cast(list[Any], summaries):
+                        text = getattr(summary, "text", None)
+                        if isinstance(text, str):
+                            yield ThinkPart(
+                                think=text,
+                                encrypted=encrypted if isinstance(encrypted, str) else None,
+                            )
 
     async def _convert_stream_response(
         self, response: AsyncStream[ResponseStreamEvent]
@@ -528,42 +531,55 @@ class OpenAIResponsesStreamedMessage:
         """Convert streaming Responses events into message parts."""
         try:
             async for chunk in response:
-                if chunk.type == "response.output_text.delta" and hasattr(chunk, "delta"):
-                    yield TextPart(text=chunk.delta)
-                elif chunk.type == "response.output_item.added" and hasattr(chunk, "item"):
-                    item = chunk.item
-                    if hasattr(item, "id"):
-                        self._id = item.id
-                    if hasattr(item, "type") and item.type == "function_call":
+                if chunk.type == "response.output_text.delta":
+                    delta = getattr(chunk, "delta", None)
+                    if isinstance(delta, str):
+                        yield TextPart(text=delta)
+                elif chunk.type == "response.output_item.added":
+                    item = getattr(chunk, "item", None)
+                    if item is None:
+                        continue
+                    item_id = getattr(item, "id", None)
+                    if isinstance(item_id, str):
+                        self._id = item_id
+                    if getattr(item, "type", None) == "function_call":
+                        call_id = getattr(item, "call_id", None)
+                        name = getattr(item, "name", None)
+                        arguments = getattr(item, "arguments", None)
                         yield ToolCall(
-                            id=item.call_id if hasattr(item, "call_id") else str(uuid.uuid4()),
+                            id=call_id if isinstance(call_id, str) else str(uuid.uuid4()),
                             function=ToolCall.FunctionBody(
-                                name=item.name if hasattr(item, "name") else "",
-                                arguments=item.arguments if hasattr(item, "arguments") else "",
+                                name=name if isinstance(name, str) else "",
+                                arguments=arguments if isinstance(arguments, str) else "",
                             ),
                         )
-                elif chunk.type == "response.output_item.done" and hasattr(chunk, "item"):
-                    item = chunk.item
-                    if hasattr(item, "id"):
-                        self._id = item.id
-                    if (
-                        hasattr(item, "type")
-                        and item.type == "reasoning"
-                        and hasattr(item, "encrypted_content")
-                    ):
-                        yield ThinkPart(think="", encrypted=item.encrypted_content)
-                elif chunk.type == "response.function_call_arguments.delta" and hasattr(
-                    chunk, "delta"
-                ):
-                    yield ToolCallPart(arguments_part=chunk.delta)
+                elif chunk.type == "response.output_item.done":
+                    item = getattr(chunk, "item", None)
+                    if item is None:
+                        continue
+                    item_id = getattr(item, "id", None)
+                    if isinstance(item_id, str):
+                        self._id = item_id
+                    if getattr(item, "type", None) == "reasoning":
+                        encrypted = getattr(item, "encrypted_content", None)
+                        yield ThinkPart(
+                            think="",
+                            encrypted=encrypted if isinstance(encrypted, str) else None,
+                        )
+                elif chunk.type == "response.function_call_arguments.delta":
+                    delta = getattr(chunk, "delta", None)
+                    yield ToolCallPart(arguments_part=delta if isinstance(delta, str) else None)
                 elif chunk.type == "response.reasoning_summary_part.added":
                     yield ThinkPart(think="")
-                elif chunk.type == "response.reasoning_summary_text.delta" and hasattr(
-                    chunk, "delta"
-                ):
-                    yield ThinkPart(think=chunk.delta)
-                elif chunk.type == "response.completed" and hasattr(chunk, "response"):
-                    self._usage = chunk.response.usage
+                elif chunk.type == "response.reasoning_summary_text.delta":
+                    delta = getattr(chunk, "delta", None)
+                    if isinstance(delta, str):
+                        yield ThinkPart(think=delta)
+                elif chunk.type == "response.completed":
+                    completed_response = getattr(chunk, "response", None)
+                    usage = getattr(completed_response, "usage", None)
+                    if isinstance(usage, ResponseUsage):
+                        self._usage = usage
         except (OpenAIError, httpx.HTTPError) as e:
             raise convert_error(e) from e
 

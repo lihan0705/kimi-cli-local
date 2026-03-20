@@ -212,7 +212,7 @@ class Anthropic:
                         last_block["cache_control"] = CacheControlEphemeralParam(type="ephemeral")
                     case "thinking" | "redacted_thinking":
                         pass
-        generation_kwargs: dict[str, Any] = self._generation_kwargs.copy()
+        generation_kwargs = cast(dict[str, Any], dict(self._generation_kwargs))
         betas = generation_kwargs.pop("beta_features", [])
         extra_headers = {
             **{"anthropic-beta": ",".join(str(e) for e in betas)},
@@ -251,7 +251,7 @@ class Anthropic:
                 case "off":
                     thinking_config = {"type": "disabled"}
                 case _:
-                    thinking_config = {"type": "adaptive"}  # type: ignore[typeddict-item]
+                    thinking_config = {"type": "adaptive"}
             new = self.with_generation_kwargs(thinking=thinking_config)
             # Remove the now-unnecessary interleaved-thinking beta header.
             if (
@@ -399,8 +399,7 @@ class AnthropicStreamedMessage:
             self._usage.cache_read_input_tokens = delta_usage.cache_read_input_tokens
         if delta_usage.input_tokens is not None:
             self._usage.input_tokens = delta_usage.input_tokens
-        if delta_usage.output_tokens is not None:  # type: ignore
-            self._usage.output_tokens = delta_usage.output_tokens
+        self._usage.output_tokens = delta_usage.output_tokens
 
     async def _convert_non_stream_response(
         self,
@@ -411,18 +410,33 @@ class AnthropicStreamedMessage:
         for block in response.content:
             match block.type:
                 case "text":
-                    yield TextPart(text=block.text)
+                    text = getattr(block, "text", None)
+                    if isinstance(text, str):
+                        yield TextPart(text=text)
                 case "thinking":
-                    yield ThinkPart(think=block.thinking, encrypted=block.signature)
+                    think = getattr(block, "thinking", None)
+                    encrypted = getattr(block, "signature", None)
+                    if isinstance(think, str):
+                        yield ThinkPart(
+                            think=think,
+                            encrypted=encrypted if isinstance(encrypted, str) else None,
+                        )
                 case "redacted_thinking":
-                    yield ThinkPart(think="", encrypted=block.data)
+                    encrypted = getattr(block, "data", None)
+                    if isinstance(encrypted, str):
+                        yield ThinkPart(think="", encrypted=encrypted)
                 case "tool_use":
-                    yield ToolCall(
-                        id=block.id,
-                        function=ToolCall.FunctionBody(
-                            name=block.name, arguments=json.dumps(block.input)
-                        ),
-                    )
+                    tool_id = getattr(block, "id", None)
+                    tool_name = getattr(block, "name", None)
+                    tool_input = getattr(block, "input", None)
+                    if isinstance(tool_id, str) and isinstance(tool_name, str):
+                        yield ToolCall(
+                            id=tool_id,
+                            function=ToolCall.FunctionBody(
+                                name=tool_name,
+                                arguments=json.dumps(tool_input),
+                            ),
+                        )
                 case _:
                     continue
 
@@ -442,20 +456,26 @@ class AnthropicStreamedMessage:
                         block = event.content_block
                         match block.type:
                             case "text":
-                                if hasattr(block, "text"):
-                                    yield TextPart(text=block.text)
+                                text = getattr(block, "text", None)
+                                if isinstance(text, str):
+                                    yield TextPart(text=text)
                             case "thinking":
-                                if hasattr(block, "thinking"):
-                                    yield ThinkPart(think=block.thinking)
+                                think = getattr(block, "thinking", None)
+                                if isinstance(think, str):
+                                    yield ThinkPart(think=think)
                             case "redacted_thinking":
-                                if hasattr(block, "data"):
-                                    yield ThinkPart(think="", encrypted=block.data)
+                                encrypted = getattr(block, "data", None)
+                                if isinstance(encrypted, str):
+                                    yield ThinkPart(think="", encrypted=encrypted)
                             case "tool_use":
-                                if hasattr(block, "id") and hasattr(block, "name"):
+                                tool_id = getattr(block, "id", None)
+                                tool_name = getattr(block, "name", None)
+                                if isinstance(tool_id, str) and isinstance(tool_name, str):
                                     yield ToolCall(
-                                        id=block.id,
+                                        id=tool_id,
                                         function=ToolCall.FunctionBody(
-                                            name=block.name, arguments=""
+                                            name=tool_name,
+                                            arguments="",
                                         ),
                                     )
                             case (
@@ -474,17 +494,23 @@ class AnthropicStreamedMessage:
                         delta = event.delta
                         match delta.type:
                             case "text_delta":
-                                if hasattr(delta, "text"):
-                                    yield TextPart(text=delta.text)
+                                text = getattr(delta, "text", None)
+                                if isinstance(text, str):
+                                    yield TextPart(text=text)
                             case "thinking_delta":
-                                if hasattr(delta, "thinking"):
-                                    yield ThinkPart(think=delta.thinking)
+                                think = getattr(delta, "thinking", None)
+                                if isinstance(think, str):
+                                    yield ThinkPart(think=think)
                             case "input_json_delta":
-                                if hasattr(delta, "partial_json"):
-                                    yield ToolCallPart(arguments_part=delta.partial_json)
+                                partial_json = getattr(delta, "partial_json", None)
+                                arguments_part = (
+                                    partial_json if isinstance(partial_json, str) else None
+                                )
+                                yield ToolCallPart(arguments_part=arguments_part)
                             case "signature_delta":
-                                if hasattr(delta, "signature"):
-                                    yield ThinkPart(think="", encrypted=delta.signature)
+                                encrypted = getattr(delta, "signature", None)
+                                if isinstance(encrypted, str):
+                                    yield ThinkPart(think="", encrypted=encrypted)
                             case "citations_delta":
                                 # ignore
                                 continue

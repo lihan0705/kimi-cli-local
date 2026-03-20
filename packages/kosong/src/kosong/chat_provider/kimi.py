@@ -159,7 +159,7 @@ class Kimi:
             # default kimi generation kwargs
             "max_tokens": 32000,
         }
-        generation_kwargs.update(self._generation_kwargs)
+        generation_kwargs.update(cast(dict[str, Any], dict(self._generation_kwargs)))
 
         try:
             response = await self.client.chat.completions.create(
@@ -237,7 +237,7 @@ class Kimi:
         """
 
         model_parameters: dict[str, Any] = {"base_url": str(self.client.base_url)}
-        model_parameters.update(self._generation_kwargs)
+        model_parameters.update(cast(dict[str, Any], dict(self._generation_kwargs)))
         return model_parameters
 
     @property

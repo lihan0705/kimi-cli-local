@@ -123,7 +123,7 @@ class OpenAILegacy:
             messages.append({"role": "system", "content": system_prompt})
         messages.extend(self._convert_message(message) for message in history)
 
-        generation_kwargs: dict[str, Any] = self._generation_kwargs.copy()
+        generation_kwargs = cast(dict[str, Any], dict(self._generation_kwargs))
 
         try:
             create_call = cast(Any, self.client.chat.completions.create)

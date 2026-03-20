@@ -198,7 +198,7 @@ class CallableTool(Tool, ABC):
             ret = await self.__call__(**arguments)
         else:
             ret = await self.__call__(arguments)
-        if not isinstance(ret, ToolReturnValue):  # type: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(ret, ToolReturnValue):  # pyright: ignore[reportUnnecessaryIsInstance]
             # let's do not trust the return type of the tool
             ret = ToolError(
                 message=f"Invalid return type: {type(ret)}",
@@ -220,11 +220,11 @@ class _GenerateJsonSchemaNoTitles(GenerateJsonSchema):
     """Custom JSON schema generator that omits titles."""
 
     @override
-    def field_title_should_be_set(self, schema: Any) -> bool:  # type: ignore[reportMissingParameterType]
+    def field_title_should_be_set(self, schema: Any) -> bool:
         return False
 
     @override
-    def _update_class_schema(self, json_schema: Any, cls: Any, config: Any) -> None:  # type: ignore[reportMissingParameterType]
+    def _update_class_schema(self, json_schema: Any, cls: Any, config: Any) -> None:
         super()._update_class_schema(json_schema, cls, config)
         json_schema.pop("title", None)
 
@@ -257,7 +257,7 @@ class CallableTool2[Params: BaseModel](ABC):
             raise ValueError(
                 "Tool name must be provided either as class variable or constructor argument"
             )
-        if not isinstance(self.name, str):  # type: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(self.name, str):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise ValueError("Tool name must be a string")
 
         self.description = description or getattr(cls, "description", "")
@@ -265,7 +265,7 @@ class CallableTool2[Params: BaseModel](ABC):
             raise ValueError(
                 "Tool description must be provided either as class variable or constructor argument"
             )
-        if not isinstance(self.description, str):  # type: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(self.description, str):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise ValueError("Tool description must be a string")
 
         self.params = params or getattr(cls, "params", None)  # type: ignore
@@ -273,7 +273,7 @@ class CallableTool2[Params: BaseModel](ABC):
             raise ValueError(
                 "Tool param must be provided either as class variable or constructor argument"
             )
-        if not isinstance(self.params, type) or not issubclass(self.params, BaseModel):  # type: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(self.params, type) or not issubclass(self.params, BaseModel):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise ValueError("Tool params must be a subclass of pydantic.BaseModel")
 
         self._base = Tool(
@@ -298,7 +298,7 @@ class CallableTool2[Params: BaseModel](ABC):
             return ToolValidateError(str(e))
 
         ret = await self.__call__(params)
-        if not isinstance(ret, ToolReturnValue):  # type: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(ret, ToolReturnValue):  # pyright: ignore[reportUnnecessaryIsInstance]
             # let's do not trust the return type of the tool
             ret = ToolError(
                 message=f"Invalid return type: {type(ret)}",

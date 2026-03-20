@@ -279,13 +279,13 @@ async def context(soul: KimiSoul, args: str):
         elif hasattr(tool_any, "base") and hasattr(tool_any.base, "parameters"):
             params = tool_any.base.parameters
         elif hasattr(tool_any, "params"):
-            p = tool_any.params
+            p: Any = tool_any.params
             from pydantic import BaseModel
 
             if isinstance(p, type) and issubclass(p, BaseModel):
                 params = p.model_json_schema()
             else:
-                params = p
+                params = cast(Any, p)
 
         description = getattr(tool_any, "description", "")
         try:

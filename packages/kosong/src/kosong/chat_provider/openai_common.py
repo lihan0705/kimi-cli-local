@@ -45,13 +45,14 @@ def close_openai_client(client: AsyncOpenAI) -> None:
         return
     if not inspect.isawaitable(result):
         return
+    awaitable_result = cast(Awaitable[object], result)
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
-        if hasattr(result, "close"):
+        if inspect.iscoroutine(result):
             result.close()
         return
-    loop.create_task(_drain_awaitable(cast(Awaitable[object], result)))
+    loop.create_task(_drain_awaitable(awaitable_result))
 
 
 def close_replaced_openai_client(client: AsyncOpenAI, *, client_kwargs: Mapping[str, Any]) -> None:
