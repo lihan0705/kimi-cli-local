@@ -222,15 +222,14 @@ def _read_wire_lines(wire_file: Path) -> list[str]:
                     "method": "request" if _is_req else "event",
                     "params": message_raw,
                 }
-                if _is_req:
+                if _is_req and hasattr(message, "id"):
                     # JSON-RPC requests require a top-level ``id`` so the
                     # client can correlate its response.  Use the request's
                     # own ``id`` field (e.g. ApprovalRequest.id,
                     # QuestionRequest.id).  Note: ``message_raw`` wraps data
                     # as ``{"type": ..., "payload": {...}}`` so the id lives
                     # on the deserialized object, not at the raw dict top level.
-                    if hasattr(message, "id"):
-                        event_msg["id"] = message.id
+                    event_msg["id"] = message.id
                 result.append(json.dumps(event_msg, ensure_ascii=False))
             except (json.JSONDecodeError, KeyError, ValueError, TypeError):
                 continue

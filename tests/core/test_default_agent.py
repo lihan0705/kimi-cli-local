@@ -229,7 +229,7 @@ Overusing this tool interrupts the user's flow. Only use it when the user's inpu
                 parameters={
                     "properties": {
                         "questions": {
-                            "description": "The questions to ask the user (1-4 questions).",
+                            "description": "The questions to ask the user (1-10 questions).",
                             "items": {
                                 "properties": {
                                     "question": {
@@ -242,7 +242,7 @@ Overusing this tool interrupts the user's flow. Only use it when the user's inpu
                                         "type": "string",
                                     },
                                     "options": {
-                                        "description": "2-4 meaningful, distinct options. Do NOT include an 'Other' option — the system adds one automatically.",
+                                        "description": "2-10 meaningful, distinct options. Do NOT include an 'Other' option — the system adds one automatically.",
                                         "items": {
                                             "properties": {
                                                 "label": {
@@ -258,7 +258,7 @@ Overusing this tool interrupts the user's flow. Only use it when the user's inpu
                                             "required": ["label"],
                                             "type": "object",
                                         },
-                                        "maxItems": 4,
+                                        "maxItems": 10,
                                         "minItems": 2,
                                         "type": "array",
                                     },
@@ -271,7 +271,7 @@ Overusing this tool interrupts the user's flow. Only use it when the user's inpu
                                 "required": ["question", "options"],
                                 "type": "object",
                             },
-                            "maxItems": 4,
+                            "maxItems": 10,
                             "minItems": 1,
                             "type": "array",
                         }
