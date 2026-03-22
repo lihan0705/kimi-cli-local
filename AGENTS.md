@@ -254,7 +254,9 @@ To avoid conflicts between Pyright and ty, use suppression comments by **tool na
 
 ### Maintenance Notes
 
-- After any suppression update, run `make check` to verify:
+- **Linting (Ruff SIM102)**: Avoid nested `if` statements when they can be combined into a single `if` with `and`. This is a hard requirement for CI.
+- **Tool Definitions & Snapshots**: When modifying tool schemas (e.g., `ask_user` tool `maxItems` or `description`), always run `uv run python -m pytest --inline-snapshot=fix` to synchronize the test snapshots in `tests/core/test_default_agent.py` and other relevant files.
+- **Type Checking**: After any suppression update, run `make check` to verify:
   - Pyright remains green (blocking)
   - ty diagnostics are expected/non-blocking
-- Prefer fixing types over adding suppressions.
+- **Code Quality**: Prefer fixing types over adding suppressions.
